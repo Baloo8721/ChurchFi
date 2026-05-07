@@ -78,16 +78,10 @@ const css = `
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
 
   :root{
-    --bg:#0d0f14;--surface:#13161e;--border:#1e2230;--accent:#22c55e;
-    --accent2:#38bdf8;--warn:#fb923c;--danger:#f87171;--text:#e2e8f0;
-    --muted:#64748b;--card:#181c27;--sbg:#0b1a0f;--sbd:#1a3a20;--stx:#86efac;
-    --grad:radial-gradient(ellipse 70% 60% at 50% 0%,#0f2318 0%,#0d0f14 70%);
-  }
-  body.light{
-    --bg:#f0f4f0;--surface:#fff;--border:#d1ddd1;--accent:#16a34a;
-    --accent2:#0284c7;--warn:#ea580c;--danger:#dc2626;--text:#1a2e1a;
-    --muted:#4b6358;--card:#fff;--sbg:#dcfce7;--sbd:#86efac;--stx:#15803d;
-    --grad:radial-gradient(ellipse 70% 60% at 50% 0%,#dcfce7 0%,#f0f4f0 70%);
+    --bg:#f8fafc;--surface:#ffffff;--border:#e2e8f0;--accent:#16a34a;
+    --accent2:#0284c7;--warn:#ea580c;--danger:#dc2626;--text:#1e293b;
+    --muted:#64748b;--card:#ffffff;--sbg:#dcfce7;--sbd:#86efac;--stx:#15803d;
+    --grad:radial-gradient(ellipse 70% 60% at 50% 0%,#f0fdf4 0%,#f8fafc 70%);
   }
   body{background:var(--bg);color:var(--text);font-family:'Sora',sans-serif;min-height:100vh;transition:background .25s,color .25s;}
   .mono{font-family:'DM Mono',monospace;}
@@ -988,7 +982,7 @@ import PropertyMap from './PropertyMap';
 
 export default function App() {
   const [view,    setView]   = useState("resident");
-  const [dark,    setDark]   = useState(true);
+  const [dark,    setDark]   = useState(false);
   const [authed,  setAuthed] = useState(false);
   const [events,  setEvents] = useState(INITIAL_EVENTS);
   const [posts,   setPosts]  = useState(INITIAL_TENANT_POSTS);
@@ -1017,8 +1011,6 @@ export default function App() {
         </div>
 
         <div style={{display:"flex",alignItems:"center",gap:8,flexShrink:0}}>
-          <span style={{fontSize:13}}>{dark?"🌙":"☀️"}</span>
-          <button className="tog" onClick={()=>setDark(d=>!d)}/>
           {authed&&<>
             <div style={{width:1,height:18,background:"var(--border)"}}/>
             <button onClick={()=>setAuthed(false)} style={{fontSize:10,padding:"3px 9px",borderRadius:6,border:"1px solid var(--border)",background:"transparent",color:"var(--muted)",cursor:"pointer",fontFamily:"'Sora',sans-serif",whiteSpace:"nowrap"}}>Sign out</button>
