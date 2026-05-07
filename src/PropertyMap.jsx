@@ -1,10 +1,11 @@
 import { useState, useEffect } from "react";
-import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
+import { getDatabase, ref, get, set } from "firebase/database";
 import { initializeApp } from "firebase/app";
 
 const firebaseConfig = {
   apiKey: "AIzaSyB03rgYczVFouPoTZYXgWKj7tguHauzufw",
   authDomain: "churchfi-7790b.firebaseapp.com",
+  databaseURL: "https://churchfi-7790b-default-rtdb.firebaseio.com",
   projectId: "churchfi-7790b",
   storageBucket: "churchfi-7790b.firebasestorage.app",
   messagingSenderId: "876984642539",
@@ -12,7 +13,7 @@ const firebaseConfig = {
 };
 
 const fbApp = initializeApp(firebaseConfig);
-const db = getFirestore(fbApp);
+const db = getDatabase(fbApp);
 
 const DEFAULT_DATA = {
   buildings: [
@@ -68,9 +69,9 @@ const DEFAULT_DATA = {
 
 const loadPropertyData = async () => {
   try {
-    const docSnap = await getDoc(doc(db, "propertyMap", "data"));
-    if (docSnap.exists()) {
-      const data = docSnap.data();
+    const snapshot = await get(ref(db, "propertyMap/data"));
+    if (snapshot.exists()) {
+      const data = snapshot.val();
       if (data.units && data.units.length > 0 && data.units.length === 30) {
         return data;
       }
@@ -81,7 +82,7 @@ const loadPropertyData = async () => {
 
 const savePropertyData = async (data) => {
   try {
-    await setDoc(doc(db, "propertyMap", "data"), data);
+    await set(ref(db, "propertyMap/data"), data);
   } catch (e) { console.error("Save error:", e); }
 };
 
