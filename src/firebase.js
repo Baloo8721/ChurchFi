@@ -24,11 +24,19 @@ export async function loadAllData() {
       get(ref(db, "propertyMap/data"))
     ]);
 
+    const parseSnap = (snap) => {
+      if (!snap.exists()) return [];
+      const val = snap.val();
+      if (!val) return [];
+      if (Array.isArray(val)) return val;
+      return Object.entries(val).map(([id, data]) => ({ id: String(id), ...data }));
+    };
+
     return {
-      users: usersSnap.exists() ? Object.entries(usersSnap.val() || {}).map(([id, data]) => ({ id, ...data })) : [],
-      events: eventsSnap.exists() ? Object.entries(eventsSnap.val() || {}).map(([id, data]) => ({ id, ...data })) : [],
-      posts: postsSnap.exists() ? Object.entries(postsSnap.val() || {}).map(([id, data]) => ({ id, ...data })) : [],
-      maintenance: maintSnap.exists() ? Object.entries(maintSnap.val() || {}).map(([id, data]) => ({ id, ...data })) : [],
+      users: parseSnap(usersSnap),
+      events: parseSnap(eventsSnap),
+      posts: parseSnap(postsSnap),
+      maintenance: parseSnap(maintSnap),
       propertyMap: mapSnap.exists() ? mapSnap.val() : null
     };
   } catch (e) {
@@ -69,7 +77,19 @@ export async function savePosts(posts) {
 
 export async function saveMaintenance(maint) {
   try {
-    await set(ref(db, "maintenance"), maint.reduce((acc, m) => ({ ...acc, [m.id]: m }), {}));
+    if (Array.isArray(maint)) {
+      const obj = {};
+      maint.forEach(m => { 
+        obj[String(m.id)] = m; 
+      });
+      await set(ref(db, "maintenance"), obj);
+    } else if (maint && typeof maint === 'object') {
+      const obj = {};
+      Object.keys(maint).forEach(k => { 
+        obj[k] = maint[k]; 
+      });
+      await set(ref(db, "maintenance"), obj);
+    }
     return true;
   } catch (e) {
     console.error("Error saving maintenance:", e);
