@@ -1128,23 +1128,35 @@ export default function App() {
   }, []);
 
   const setUsersWithSave = (newUsers) => {
-    setUsers(newUsers);
-    saveUsers(newUsers);
+    setUsers(prevUsers => {
+      const updatedUsers = typeof newUsers === 'function' ? newUsers(prevUsers) : newUsers;
+      saveUsers(updatedUsers);
+      return updatedUsers;
+    });
   };
 
   const setEventsWithSave = (newEvents) => {
-    setEvents(newEvents);
-    saveEvents(newEvents);
+    setEvents(prevEvents => {
+      const updatedEvents = typeof newEvents === 'function' ? newEvents(prevEvents) : newEvents;
+      saveEvents(updatedEvents);
+      return updatedEvents;
+    });
   };
 
   const setPostsWithSave = (newPosts) => {
-    setPosts(newPosts);
-    savePosts(newPosts);
+    setPosts(prevPosts => {
+      const updatedPosts = typeof newPosts === 'function' ? newPosts(prevPosts) : newPosts;
+      savePosts(updatedPosts);
+      return updatedPosts;
+    });
   };
 
   const setMaintWithSave = (newMaint) => {
-    setMaint(newMaint);
-    saveMaintenance(newMaint);
+    setMaint(prevMaint => {
+      const updatedMaint = typeof newMaint === 'function' ? newMaint(prevMaint) : newMaint;
+      saveMaintenance(updatedMaint);
+      return updatedMaint;
+    });
   };
 
   function addMaint(req){ setMaintWithSave(r=>[{...req,id:Date.now()},...r]); }
