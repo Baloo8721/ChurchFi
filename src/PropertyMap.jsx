@@ -41,6 +41,7 @@ function PropertyMap({ users, maint, setMaint, toast2 }) {
   const [propertyData, setPropertyData] = useState(loadData);
   const [editMode, setEditMode] = useState(false);
   const [zoom, setZoom] = useState(1);
+  const [expand, setExpand] = useState(false);
   const [selUnit, setSelUnit] = useState(null);
   const [selCam, setSelCam] = useState(null);
   const [layers, setLayers] = useState({ wifi: true, cameras: true, units: true, alerts: true });
@@ -163,7 +164,8 @@ function PropertyMap({ users, maint, setMaint, toast2 }) {
 
   function handleSvgMouseMove(e) {
     if (!editMode) return;
-    const coords = getSvgCoords(e, e.currentTarget);
+    const isTouch = e.touches && e.touches.length > 0;
+    const coords = isTouch ? getSvgCoords({ clientX: e.touches[0].clientX, clientY: e.touches[0].clientY }, e.currentTarget) : getSvgCoords(e, e.currentTarget);
     
     if (dragging && dragStart) {
       const dx = coords.x - dragStart.x;
@@ -267,6 +269,138 @@ function PropertyMap({ users, maint, setMaint, toast2 }) {
     }
   }
 
+  if (expand) {
+    return (
+      <div style={{ position: "fixed", inset: 0, zIndex: 9999, background: "#f0f2f5", overflow: "auto", padding: 50, paddingTop: 60 }}>
+        <div style={{ position: "fixed", top: 10, left: 10, zIndex: 10000, display: "flex", gap: 6, background: "#fff", padding: 8, borderRadius: 8, boxShadow: "0 2px 8px rgba(0,0,0,0.15)" }}>
+          <button onClick={() => setEditMode(!editMode)} style={{ padding: "6px 12px", borderRadius: 6, border: "1px solid var(--accent)", background: editMode ? "var(--accent)" : "transparent", color: editMode ? "#fff" : "var(--accent)", fontSize: 11, fontWeight: 700 }}>{editMode ? "✓ EDIT" : "✏ EDIT"}</button>
+          <button onClick={() => setExpand(false)} style={{ padding: "6px 12px", borderRadius: 6, border: "1px solid var(--border)", background: "#fff", color: "var(--text)", fontSize: 11, fontWeight: 700 }}>✕ Close</button>
+        </div>
+        {editMode && (
+          <div style={{ position: "fixed", bottom: 10, left: 10, zIndex: 10000, display: "flex", gap: 4, background: "#fff", padding: 8, borderRadius: 8, boxShadow: "0 2px 8px rgba(0,0,0,0.15)" }}>
+            <button onClick={() => setNewItemType(newItemType === "building" ? null : "building")} style={{ padding: "6px 10px", borderRadius: 4, border: `1px solid ${newItemType === "building" ? "#22c55e" : "#ddd"}`, background: newItemType === "building" ? "#22c55e" : "#fff", color: newItemType === "building" ? "#fff" : "#22c55e", fontSize: 10, fontWeight: 700 }}>🏢 Bld</button>
+            <button onClick={() => setNewItemType(newItemType === "unit" ? null : "unit")} style={{ padding: "6px 10px", borderRadius: 4, border: `1px solid ${newItemType === "unit" ? "#38bdf8" : "#ddd"}`, background: newItemType === "unit" ? "#38bdf8" : "#fff", color: newItemType === "unit" ? "#fff" : "#38bdf8", fontSize: 10, fontWeight: 700 }}>⬤ Unit</button>
+            <button onClick={() => setNewItemType(newItemType === "camera" ? null : "camera")} style={{ padding: "6px 10px", borderRadius: 4, border: `1px solid ${newItemType === "camera" ? "#a78bfa" : "#ddd"}`, background: newItemType === "camera" ? "#a78bfa" : "#fff", color: newItemType === "camera" ? "#fff" : "#a78bfa", fontSize: 10, fontWeight: 700 }}>📷 Cam</button>
+            <button onClick={() => setNewItemType(newItemType === "wifi" ? null : "wifi")} style={{ padding: "6px 10px", borderRadius: 4, border: `1px solid ${newItemType === "wifi" ? "#fb923c" : "#ddd"}`, background: newItemType === "wifi" ? "#fb923c" : "#fff", color: newItemType === "wifi" ? "#fff" : "#fb923c", fontSize: 10, fontWeight: 700 }}>📶 WiFi</button>
+          </div>
+        )}
+        {editMode && newItemType === "building" && (
+          <div style={{ position: "fixed", top: 60, right: 10, zIndex: 10000, background: "#fff", padding: 12, borderRadius: 8, boxShadow: "0 2px 8px rgba(0,0,0,0.15)", maxWidth: 250 }}>
+            <div style={{ fontSize: 10, color: "#666", marginBottom: 8 }}>Click and drag on map to draw</div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 6, marginBottom: 8 }}>
+              <input value={buildingForm.label} onChange={e => setBuildingForm(f => ({ ...f, label: e.target.value }))} placeholder="Label" style={{ padding: "6px", borderRadius: 4, border: "1px solid #ddd", fontSize: 10 }} />
+              <input value={buildingForm.sublabel} onChange={e => setBuildingForm(f => ({ ...f, sublabel: e.target.value }))} placeholder="Sublabel" style={{ padding: "6px", borderRadius: 4, border: "1px solid #ddd", fontSize: 10 }} />
+              <select value={buildingForm.color} onChange={e => setBuildingForm(f => ({ ...f, color: e.target.value }))} style={{ padding: "6px", borderRadius: 4, border: "1px solid #ddd", fontSize: 10 }}>
+                <option value="#22c55e">Green</option>
+                <option value="#38bdf8">Blue</option>
+                <option value="#fb923c">Orange</option>
+                <option value="#a78bfa">Purple</option>
+              </select>
+              <button onClick={() => { addBuilding({ ...buildingForm, x: 100, y: 100, w: 80, h: 60 }); toast2("Building added"); }} style={{ padding: "6px", borderRadius: 4, border: "none", background: "#22c55e", color: "#fff", fontSize: 10, fontWeight: 700 }}>+ Add Building</button>
+            </div>
+          </div>
+        )}
+        {editMode && newItemType === "unit" && (
+          <div style={{ position: "fixed", top: 60, right: 10, zIndex: 10000, background: "#fff", padding: 12, borderRadius: 8, boxShadow: "0 2px 8px rgba(0,0,0,0.15)", maxWidth: 200 }}>
+            <div style={{ fontSize: 10, marginBottom: 6 }}>Click on map to add unit</div>
+            <button onClick={() => { const b = buildings[0]; if(b) { addUnit({ label: `U${units.length+1}`, building: b.id, rx: 100, ry: 100, floor: 1 }); toast2("Unit added at 100,100"); }}} style={{ padding: "6px 12px", borderRadius: 4, border: "none", background: "#38bdf8", color: "#fff", fontSize: 10 }}>+ Add Unit at 100,100</button>
+          </div>
+        )}
+        {editMode && newItemType === "camera" && (
+          <div style={{ position: "fixed", top: 60, right: 10, zIndex: 10000, background: "#fff", padding: 12, borderRadius: 8, boxShadow: "0 2px 8px rgba(0,0,0,0.15)", maxWidth: 200 }}>
+            <div style={{ fontSize: 10, marginBottom: 6 }}>Click on map to add camera</div>
+            <button onClick={() => { addCamera({ label: `Cam${cameras.length+1}`, x: 300, y: 200, status: "online", zone: "Property" }); toast2("Camera added at 300,200"); }} style={{ padding: "6px 12px", borderRadius: 4, border: "none", background: "#a78bfa", color: "#fff", fontSize: 10 }}>+ Add Camera at 300,200</button>
+          </div>
+        )}
+        {editMode && newItemType === "wifi" && (
+          <div style={{ position: "fixed", top: 60, right: 10, zIndex: 10000, background: "#fff", padding: 12, borderRadius: 8, boxShadow: "0 2px 8px rgba(0,0,0,0.15)", maxWidth: 200 }}>
+            <div style={{ fontSize: 10, marginBottom: 6 }}>Click on map to add WiFi</div>
+            <button onClick={() => { addWifiZone({ x: 250, y: 250, radius: 80 }); toast2("WiFi zone added at 250,250"); }} style={{ padding: "6px 12px", borderRadius: 4, border: "none", background: "#fb923c", color: "#fff", fontSize: 10 }}>+ Add WiFi at 250,250</button>
+          </div>
+)}
+        {editMode && selectedForEdit && (
+          <div style={{ position: "fixed", bottom: 10, right: 10, zIndex: 10000, background: "#fff", padding: 12, borderRadius: 8, boxShadow: "0 2px 8px rgba(0,0,0,0.15)", maxWidth: 200 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, marginBottom: 8 }}>Edit: {selectedForEdit.label}</div>
+            <button onClick={() => setSelectedForEdit(null)} style={{ padding: "4px 8px", borderRadius: 4, border: "1px solid #dc2626", background: "#fef2f2", color: "#dc2626", fontSize: 10 }}>🗑 Delete</button>
+          </div>
+        )}
+        <div style={{ background: "#fff", borderRadius: 0, overflow: "hidden" }}>
+          <div style={{ position: "absolute", top: 60, left: 10, zIndex: 10, background: "#fff", border: "1px solid #ddd", borderRadius: 8, padding: "5px 12px", display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#22c55e", boxShadow: `0 0 ${pulse ? 6 : 2}px #22c55e` }} />
+            <span style={{ fontSize: 9, color: "#22c55e", fontFamily: "'DM Mono',monospace", fontWeight: 700 }}>LIVE</span>
+            <span style={{ fontSize: 9, color: "#3a4a5a", fontFamily: "'DM Mono',monospace" }}>BGT · {units.length}</span>
+          </div>
+          <svg viewBox="0 0 700 580" style={{ width: "100%", display: "block", cursor: editMode ? (newItemType === "building" ? "crosshair" : "default") : "default" }}
+              onMouseDown={handleSvgMouseDown} onMouseMove={handleSvgMouseMove} onMouseUp={handleSvgMouseUp}
+              onTouchStart={handleSvgMouseDown} onTouchMove={handleSvgMouseMove} onTouchEnd={handleSvgMouseUp}>
+            <rect width="700" height="580" fill="#f0f2f5" />
+            <g dangerouslySetInnerHTML={{__html: `
+              <rect x="0" y="30" width="700" height="22" fill="#d1d5db" />
+              <text x="50" y="44" textAnchor="middle" fontSize="7" fill="#6b7280" fontFamily="monospace">7TH AVE E</text>
+              <rect x="0" y="530" width="700" height="22" fill="#d1d5db" />
+              <text x="50" y="544" textAnchor="middle" fontSize="7" fill="#6b7280" fontFamily="monospace">8TH AVE E</text>
+              <rect x="395" y="52" width="28" height="478" fill="#d1d5db" />
+              <text x="409" y="290" textAnchor="middle" fontSize="7" fill="#6b7280" fontFamily="monospace" transform="rotate(-90,409,290)">13TH ST E</text>
+              <rect x="660" y="52" width="25" height="478" fill="#d1d5db" />
+              <text x="672" y="290" textAnchor="middle" fontSize="7" fill="#6b7280" fontFamily="monospace" transform="rotate(-90,672,290)">14TH ST</text>
+              <text x="180" y="60" textAnchor="middle" fontSize="9" fill="#059669" fontFamily="monospace" fontWeight="700" opacity="0.7">WEST ZONE</text>
+              <text x="550" y="60" textAnchor="middle" fontSize="9" fill="#0284c7" fontFamily="monospace" fontWeight="700" opacity="0.7">EAST ZONE</text>
+              <rect x="50" y="52" width="345" height="478" fill="none" stroke="#059669" strokeWidth="1" strokeDasharray="6,4" opacity="0.4" />
+              <rect x="425" y="52" width="235" height="478" fill="none" stroke="#0284c7" strokeWidth="1" strokeDasharray="6,4" opacity="0.4" />
+            `}} />
+            {layers.wifi && wifiZones.map(wz => (
+              <g key={wz.id}>
+                <ellipse cx={wz.x} cy={wz.y} rx={wz.radius} ry={wz.radius * 0.8} fill="#22c55e" opacity="0.1" />
+                <ellipse cx={wz.x} cy={wz.y} rx={wz.radius * 0.6} ry={wz.radius * 0.5} fill="#22c55e" opacity="0.15" />
+              </g>
+            ))}
+            {layers.wifi && <g><circle cx="250" cy="280" r="10" fill="#fff" stroke="#a78bfa" strokeWidth={pulse ? 2 : 1} /><text x="250" y="284" textAnchor="middle" fontSize="10">📡</text></g>}
+            {buildings.map(bld => {
+              const isSel = selectedForEdit?.id === bld.id;
+              return (
+                <g key={bld.id} style={{ cursor: editMode ? "move" : "pointer" }} onClick={(e) => { if (editMode) { e.stopPropagation(); setSelectedForEdit({ ...bld, type: "buildings" }); } else { handleBuildingClick(bld); } }} onMouseDown={(e) => startDrag(bld, e)}>
+                  <rect x={bld.x} y={bld.y} width={bld.w} height={bld.h} rx={4} fill="#ffffff" stroke={isSel ? "#000" : bld.color} strokeWidth={isSel ? 3 : 2} />
+                  <rect x={bld.x} y={bld.y} width={bld.w} height={12} rx={4} fill={bld.color + "22"} />
+                  <text x={bld.x + bld.w / 2} y={bld.y + 9} textAnchor="middle" fontSize={bld.w > 50 ? 8 : 6} fill={bld.color} fontWeight="700">{bld.type === "church" ? "⛪ " : ""}{bld.label}</text>
+                  {editMode && (
+                    <>
+                      <g onMouseDown={(e) => { e.stopPropagation(); e.preventDefault(); const svg = e.target.ownerSVGElement || e.target.closest("svg"); const coords = getSvgCoords(e, svg); setResizing({ ...bld, corner: "se" }); setResizeStart({ ...bld }); setDragStart(coords); }} onTouchStart={(e) => { e.stopPropagation(); const t = e.touches[0]; const svg = e.target.ownerSVGElement || e.target.closest("svg"); const rect = svg.getBoundingClientRect(); const viewBox = svg.viewBox.baseVal; const scaleX = viewBox.width / rect.width; const scaleY = viewBox.height / rect.height; const coords = { x: (t.clientX - rect.left) * scaleX, y: (t.clientY - rect.top) * scaleY }; setResizing({ ...bld, corner: "se" }); setResizeStart({ ...bld }); setDragStart(coords); }}>
+                        <circle cx={bld.x + bld.w} cy={bld.y + bld.h} r={10} fill="#3b82f6" stroke="#1d4ed8" strokeWidth={2} style={{ cursor: "se-resize", pointerEvents: "all" }} />
+                      </g>
+                      <g onMouseDown={(e) => { e.stopPropagation(); e.preventDefault(); const svg = e.target.ownerSVGElement || e.target.closest("svg"); const coords = getSvgCoords(e, svg); setResizing({ ...bld, corner: "sw" }); setResizeStart({ ...bld }); setDragStart(coords); }} onTouchStart={(e) => { e.stopPropagation(); const t = e.touches[0]; const svg = e.target.ownerSVGElement || e.target.closest("svg"); const rect = svg.getBoundingClientRect(); const viewBox = svg.viewBox.baseVal; const scaleX = viewBox.width / rect.width; const scaleY = viewBox.height / rect.height; const coords = { x: (t.clientX - rect.left) * scaleX, y: (t.clientY - rect.top) * scaleY }; setResizing({ ...bld, corner: "sw" }); setResizeStart({ ...bld }); setDragStart(coords); }}>
+                        <circle cx={bld.x} cy={bld.y + bld.h} r={10} fill="#3b82f6" stroke="#1d4ed8" strokeWidth={2} style={{ cursor: "sw-resize", pointerEvents: "all" }} />
+                      </g>
+                    </>
+                  )}
+                </g>
+              );
+            })}
+            {layers.units && units.map(unit => {
+              const st = uStatus(unit.id);
+              return (
+                <g key={unit.id} onClick={(e) => { if (editMode) { e.stopPropagation(); setSelectedForEdit({ ...unit, type: "units" }); } }}>
+                  <circle cx={unit.rx} cy={unit.ry} r={5} fill={STATUS_COLOR[st]} />
+                </g>
+              );
+            })}
+            {layers.cameras && cameras.map(cam => (
+              <g key={cam.id} onClick={() => { if (!editMode) { setSelCam(cam); } else { setSelectedForEdit({ ...cam, type: "cameras" }); } }}>
+                <rect x={cam.x - 9} y={cam.y - 7} width={18} height={12} rx={3} fill="#0d1e30" stroke={cam.status === "online" ? "#38bdf8" : "#f87171"} strokeWidth={1} />
+                <circle cx={cam.x + 4} cy={cam.y} r={2.5} fill={cam.status === "online" ? "#38bdf8" : "#f87171"} />
+              </g>
+            ))}
+            <g transform="translate(665,80)">
+              <circle cx="0" cy="0" r="11" fill="#fff" stroke="#9ca3af" strokeWidth={1} />
+              <polygon points="0,-8 -2.5,2 2.5,2" fill="#ef4444" />
+              <polygon points="0,8 -2.5,-2 2.5,-2" fill="#6b7280" />
+              <text x="0" y="-11" textAnchor="middle" fontSize="6" fill="#ef4444" fontWeight="700">N</text>
+            </g>
+          </svg>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div>
       <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 6, marginBottom: 12 }}>
@@ -309,6 +443,7 @@ function PropertyMap({ users, maint, setMaint, toast2 }) {
         )}
         
         <div style={{ marginLeft: "auto", display: "flex", gap: 5, alignItems: "center" }}>
+          <button onClick={() => setExpand(e => !e)} style={{ padding: "4px 9px", borderRadius: 7, border: "1px solid #a78bfa", background: expand ? "#a78bfa" : "transparent", color: expand ? "#fff" : "#a78bfa", fontSize: 10, fontWeight: 700, cursor: "pointer" }}>⤢ Expand</button>
           <button onClick={() => setZoom(z => Math.max(0.6, z - 0.2))} style={{ width: 28, height: 28, borderRadius: 7, border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text)", fontSize: 16, cursor: "pointer" }}>−</button>
           <span style={{ fontSize: 10, color: "var(--muted)", fontFamily: "'DM Mono',monospace", minWidth: 34, textAlign: "center" }}>{Math.round(zoom * 100)}%</span>
           <button onClick={() => setZoom(z => Math.min(2.2, z + 0.2))} style={{ width: 28, height: 28, borderRadius: 7, border: "1px solid var(--border)", background: "var(--surface)", color: "var(--text)", fontSize: 16, cursor: "pointer" }}>+</button>
@@ -391,20 +526,32 @@ function PropertyMap({ users, maint, setMaint, toast2 }) {
         </div>
       )}
 
-      <div style={{ background: "#ffffff", borderRadius: 14, border: "1px solid #d1d5db", overflow: "hidden", position: "relative" }}>
+      <div style={{ 
+        background: "#ffffff", 
+        borderRadius: expand ? 0 : 14, 
+        border: expand ? "none" : "1px solid #d1d5db", 
+        overflow: "hidden", 
+        position: "relative",
+        width: "100%",
+        maxWidth: "none",
+        margin: expand ? 0 : "0 auto"
+      }}>
         <div style={{ position: "absolute", top: 10, left: 10, zIndex: 10, background: "#ffffffcc", border: "1px solid #d1d5db", borderRadius: 8, padding: "5px 12px", display: "flex", alignItems: "center", gap: 8, boxShadow: "0 1px 3px rgba(0,0,0,0.1)" }}>
           <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#22c55e", boxShadow: `0 0 ${pulse ? 6 : 2}px #22c55e` }} />
           <span style={{ fontSize: 9, color: "#22c55e", fontFamily: "'DM Mono',monospace", fontWeight: 700 }}>LIVE</span>
           <span style={{ fontSize: 9, color: "#3a4a5a", fontFamily: "'DM Mono',monospace" }}>BGT · {units.length} Units</span>
         </div>
 
-        <div style={{ overflow: "hidden", width: "100%" }}>
+        <div style={{ overflow: "hidden", width: expand ? "100%" : "100%" }}>
           <div style={{ transform: `scale(${zoom})`, transformOrigin: "top center" }}>
             <svg viewBox="0 0 700 580" style={{ width: "100%", display: "block", cursor: editMode ? (newItemType === "building" ? "crosshair" : "default") : "default" }}
                 onMouseDown={handleSvgMouseDown}
                 onMouseMove={handleSvgMouseMove}
                 onMouseUp={handleSvgMouseUp}
-                onMouseLeave={handleSvgMouseUp}>
+                onMouseLeave={handleSvgMouseUp}
+                onTouchStart={handleSvgMouseDown}
+                onTouchMove={handleSvgMouseMove}
+                onTouchEnd={handleSvgMouseUp}>
               <rect width="700" height="580" fill="#f0f2f5" />
               
               {/* Streets */}
@@ -481,8 +628,12 @@ function PropertyMap({ users, maint, setMaint, toast2 }) {
                     <text x={bld.x + bld.w / 2} y={bld.y + 9} textAnchor="middle" fontSize={bld.w > 50 ? 8 : 6} fill={bld.color} fontWeight="700">{bld.type === "church" ? "⛪ " : ""}{bld.label}</text>
                     {editMode && (
                       <>
-                        <circle cx={bld.x + bld.w} cy={bld.y + bld.h} r={6} fill="#3b82f6" stroke="#1d4ed8" strokeWidth={2} style={{ cursor: "se-resize", pointerEvents: "all" }} onMouseDown={(e) => { e.stopPropagation(); e.preventDefault(); const svg = e.target.ownerSVGElement || e.target.closest("svg"); const coords = getSvgCoords(e, svg); setResizing({ ...bld, corner: "se" }); setResizeStart({ ...bld }); setDragStart(coords); }} />
-                        <circle cx={bld.x} cy={bld.y + bld.h} r={6} fill="#3b82f6" stroke="#1d4ed8" strokeWidth={2} style={{ cursor: "sw-resize", pointerEvents: "all" }} onMouseDown={(e) => { e.stopPropagation(); e.preventDefault(); const svg = e.target.ownerSVGElement || e.target.closest("svg"); const coords = getSvgCoords(e, svg); setResizing({ ...bld, corner: "sw" }); setResizeStart({ ...bld }); setDragStart(coords); }} />
+                        <g onMouseDown={(e) => { e.stopPropagation(); e.preventDefault(); const svg = e.target.ownerSVGElement || e.target.closest("svg"); const coords = getSvgCoords(e, svg); setResizing({ ...bld, corner: "se" }); setResizeStart({ ...bld }); setDragStart(coords); }} onTouchStart={(e) => { e.stopPropagation(); const t = e.touches[0]; const svg = e.target.ownerSVGElement || e.target.closest("svg"); const rect = svg.getBoundingClientRect(); const viewBox = svg.viewBox.baseVal; const scaleX = viewBox.width / rect.width; const scaleY = viewBox.height / rect.height; const coords = { x: (t.clientX - rect.left) * scaleX, y: (t.clientY - rect.top) * scaleY }; setResizing({ ...bld, corner: "se" }); setResizeStart({ ...bld }); setDragStart(coords); }}>
+                          <circle cx={bld.x + bld.w} cy={bld.y + bld.h} r={8} fill="#3b82f6" stroke="#1d4ed8" strokeWidth={2} style={{ cursor: "se-resize", pointerEvents: "all" }} />
+                        </g>
+                        <g onMouseDown={(e) => { e.stopPropagation(); e.preventDefault(); const svg = e.target.ownerSVGElement || e.target.closest("svg"); const coords = getSvgCoords(e, svg); setResizing({ ...bld, corner: "sw" }); setResizeStart({ ...bld }); setDragStart(coords); }} onTouchStart={(e) => { e.stopPropagation(); const t = e.touches[0]; const svg = e.target.ownerSVGElement || e.target.closest("svg"); const rect = svg.getBoundingClientRect(); const viewBox = svg.viewBox.baseVal; const scaleX = viewBox.width / rect.width; const scaleY = viewBox.height / rect.height; const coords = { x: (t.clientX - rect.left) * scaleX, y: (t.clientY - rect.top) * scaleY }; setResizing({ ...bld, corner: "sw" }); setResizeStart({ ...bld }); setDragStart(coords); }}>
+                          <circle cx={bld.x} cy={bld.y + bld.h} r={8} fill="#3b82f6" stroke="#1d4ed8" strokeWidth={2} style={{ cursor: "sw-resize", pointerEvents: "all" }} />
+                        </g>
                       </>
                     )}
                   </g>
