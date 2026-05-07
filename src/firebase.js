@@ -46,8 +46,12 @@ export async function loadAllData() {
 }
 
 export async function saveUsers(users) {
+  console.log("SAVING USERS:", users?.length);
   try {
-    await set(ref(db, "users"), users.reduce((acc, u) => ({ ...acc, [u.id]: u }), {}));
+    const obj = {};
+    users.forEach(u => { obj[String(u.id)] = u; });
+    await set(ref(db, "users"), obj);
+    console.log("Users saved!");
     return true;
   } catch (e) {
     console.error("Error saving users:", e);
@@ -56,8 +60,12 @@ export async function saveUsers(users) {
 }
 
 export async function saveEvents(events) {
+  console.log("SAVING EVENTS:", events?.length);
   try {
-    await set(ref(db, "events"), events.reduce((acc, e) => ({ ...acc, [e.id]: e }), {}));
+    const obj = {};
+    events.forEach(e => { obj[String(e.id)] = e; });
+    await set(ref(db, "events"), obj);
+    console.log("Events saved!");
     return true;
   } catch (e) {
     console.error("Error saving events:", e);
@@ -66,8 +74,12 @@ export async function saveEvents(events) {
 }
 
 export async function savePosts(posts) {
+  console.log("SAVING POSTS:", posts?.length);
   try {
-    await set(ref(db, "posts"), posts.reduce((acc, p) => ({ ...acc, [p.id]: p }), {}));
+    const obj = {};
+    posts.forEach(p => { obj[String(p.id)] = p; });
+    await set(ref(db, "posts"), obj);
+    console.log("Posts saved!");
     return true;
   } catch (e) {
     console.error("Error saving posts:", e);
@@ -76,19 +88,16 @@ export async function savePosts(posts) {
 }
 
 export async function saveMaintenance(maint) {
+  console.log("SAVING MAINTENANCE:", maint);
   try {
     if (Array.isArray(maint)) {
       const obj = {};
       maint.forEach(m => { 
         obj[String(m.id)] = m; 
       });
+      console.log("Saving maintenance obj:", obj);
       await set(ref(db, "maintenance"), obj);
-    } else if (maint && typeof maint === 'object') {
-      const obj = {};
-      Object.keys(maint).forEach(k => { 
-        obj[k] = maint[k]; 
-      });
-      await set(ref(db, "maintenance"), obj);
+      console.log("Maintenance saved successfully!");
     }
     return true;
   } catch (e) {
