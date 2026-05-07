@@ -752,16 +752,26 @@ function AdminLogin({ onLogin }) {
   );
 }
 
-function Admin({ events, setEvents, posts, setPosts, maint, setMaint, users: propUsers, setUsers: propSetUsers }) {
+function Admin({ events, setEvents, posts, setPosts, maint: propMaint, setMaint: propSetMaint, users: propUsers, setUsers: propSetUsers }) {
+  const [maint, setMaint] = useState(propMaint || []);
   const [users, setUsers] = useState(INITIAL_USERS);
   
   useEffect(() => {
     if (propUsers) setUsers(propUsers);
   }, [propUsers]);
+  
+  useEffect(() => {
+    if (propMaint) setMaint(propMaint);
+  }, [propMaint]);
 
   const handleSetUsers = (newUsers) => {
     setUsers(newUsers);
     if (propSetUsers) propSetUsers(newUsers);
+  };
+
+  const handleSetMaint = (newMaint) => {
+    setMaint(newMaint);
+    if (propSetMaint) propSetMaint(newMaint);
   };
   const [toast,  setToast]  = useState(null);
   const [filter, setFilter] = useState("all");
@@ -1010,7 +1020,7 @@ function Admin({ events, setEvents, posts, setPosts, maint, setMaint, users: pro
         {posts.length===0&&<div style={{textAlign:"center",padding:"22px 0",color:"var(--muted)",fontSize:13}}>No posts. Add one above.</div>}
       </>}
 
-      {tab==="map" && <PropertyMap users={users} maint={maint} setMaint={setMaint} setUsers={setUsers} toast2={toast2}/>}
+      {tab==="map" && <PropertyMap users={users} maint={maint} setMaint={handleSetMaint} setUsers={handleSetUsers} toast2={toast2}/>}
 
       {tab==="maint" && <>
         <div style={{display:"flex",gap:8,marginBottom:14,flexWrap:"wrap",alignItems:"center"}}>
@@ -1032,7 +1042,7 @@ function Admin({ events, setEvents, posts, setPosts, maint, setMaint, users: pro
             </div>
             <textarea className="fta" placeholder="Describe the issue in detail..." value={maintMsg} onChange={e=>setMaintMsg(e.target.value)} style={{marginBottom:8,minHeight:80}}/>
             <div style={{display:"flex",gap:7}}>
-              <button className="btn" style={{fontSize:12,padding:"10px",flex:1}} onClick={()=>{ if(!maintMsg.trim()){toast2("Please describe the issue");return;} setMaint(r=>[...r,{id:Date.now(),unit:maintUnit,category:maintCat,message:maintMsg.trim(),date:new Date().toLocaleDateString("en-US",{month:"short",day:"numeric"}),status:"new"}]); setMaintMsg(""); toast2("✓ Request added"); setMaintView("active"); }}>Submit Request</button>
+              <button className="btn" style={{fontSize:12,padding:"10px",flex:1}} onClick={()=>{ if(!maintMsg.trim()){toast2("Please describe the issue");return;} handleSetMaint(r=>[...r,{id:Date.now(),unit:maintUnit,category:maintCat,message:maintMsg.trim(),date:new Date().toLocaleDateString("en-US",{month:"short",day:"numeric"}),status:"new"}]); setMaintMsg(""); toast2("✓ Request added"); setMaintView("active"); }}>Submit Request</button>
               <button className="btn sec" style={{fontSize:12,padding:"10px",flex:"unset",minWidth:80}} onClick={()=>setMaintView("active")}>Cancel</button>
             </div>
           </div>
@@ -1051,8 +1061,8 @@ function Admin({ events, setEvents, posts, setPosts, maint, setMaint, users: pro
                 </div>
                 <div style={{fontSize:12,color:"var(--muted)",lineHeight:1.5}}>{r.message}</div>
                 <div style={{display:"flex",gap:5,marginTop:8,borderTop:"1px solid var(--border)",paddingTop:8}}>
-                  <button className="abtn abtn-g" style={{padding:"5px 8px",fontSize:9}} onClick={()=>setMaint(rs=>rs.map((x,j)=>j===i?{...x,unit:r.unit,category:r.category,message:r.message,date:r.date,status:r.status==="resolved"?"new":"resolved"}:x))}>{r.status==="resolved"?"Reopen":"Toggle Status"}</button>
-                  <button className="abtn abtn-r" style={{padding:"5px 8px",fontSize:9}} onClick={()=>{setMaint(rs=>rs.filter((_,j)=>j!==i));toast2("Request removed");}}>Delete</button>
+                  <button className="abtn abtn-g" style={{padding:"5px 8px",fontSize:9}} onClick={()=>handleSetMaint(rs=>rs.map((x,j)=>j===i?{...x,unit:r.unit,category:r.category,message:r.message,date:r.date,status:r.status==="resolved"?"new":"resolved"}:x))}>{r.status==="resolved"?"Reopen":"Toggle Status"}</button>
+                  <button className="abtn abtn-r" style={{padding:"5px 8px",fontSize:9}} onClick={()=>{handleSetMaint(rs=>rs.filter((_,j)=>j!==i));toast2("Request removed");}}>Delete</button>
                 </div>
               </div>
             ))}
@@ -1071,9 +1081,9 @@ function Admin({ events, setEvents, posts, setPosts, maint, setMaint, users: pro
                 </div>
                 <div style={{fontSize:12,color:"var(--muted)",lineHeight:1.6,marginBottom:10}}>{r.message}</div>
                 <div style={{display:"flex",gap:6}}>
-                  {r.status!=="in_progress"&&<button className="abtn" style={{background:"#fff7ed",color:"var(--warn)",border:"1px solid #fed7aa",padding:"6px 0",fontSize:10}} onClick={()=>setMaint(rs=>rs.map((x,j)=>x.id===r.id?{...x,status:"in_progress"}:x))}>In Progress</button>}
-                  {r.status!=="resolved"&&<button className="abtn abtn-g" style={{padding:"6px 0",fontSize:10}} onClick={()=>setMaint(rs=>rs.map((x,j)=>x.id===r.id?{...x,status:"resolved"}:x))}>Mark Resolved</button>}
-                  <button className="abtn abtn-r" style={{flex:"unset",padding:"6px 12px",fontSize:10}} onClick={()=>setMaint(rs=>rs.filter((_,j)=>rs[j]?.id===r.id))}>Remove</button>
+                  {r.status!=="in_progress"&&<button className="abtn" style={{background:"#fff7ed",color:"var(--warn)",border:"1px solid #fed7aa",padding:"6px 0",fontSize:10}} onClick={()=>handleSetMaint(rs=>rs.map((x,j)=>x.id===r.id?{...x,status:"in_progress"}:x))}>In Progress</button>}
+                  {r.status!=="resolved"&&<button className="abtn abtn-g" style={{padding:"6px 0",fontSize:10}} onClick={()=>handleSetMaint(rs=>rs.map((x,j)=>x.id===r.id?{...x,status:"resolved"}:x))}>Mark Resolved</button>}
+                  <button className="abtn abtn-r" style={{flex:"unset",padding:"6px 12px",fontSize:10}} onClick={()=>handleSetMaint(rs=>rs.filter((_,j)=>rs[j]?.id===r.id))}>Remove</button>
                 </div>
               </div>
             ))}
@@ -1137,7 +1147,7 @@ export default function App() {
     saveMaintenance(newMaint);
   };
 
-  function addMaint(req){ setMaint(r=>[{...req,id:Date.now()},...r]); }
+  function addMaint(req){ setMaintWithSave(r=>[{...req,id:Date.now()},...r]); }
 
   const showAdmin = view==="admin" && authed;
   const showLogin = view==="admin" && !authed;
