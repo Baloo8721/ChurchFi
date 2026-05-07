@@ -5,16 +5,41 @@ const CHURCH_LOGO = "⛪";
 const AppCtx = createContext(null);
 
 const INITIAL_USERS = [
-  { id:1,  unit:"Unit 1",  name:"Maria G.",  mac:"AA:BB:CC:DD:EE:01", ip:"192.168.1.101", minutesUsed:60, status:"expired", paid:false, lastSeen:"2 min ago",  joined:"Apr 10", dataUsed:"1.2 GB" },
-  { id:2,  unit:"Unit 7",  name:"James T.",  mac:"AA:BB:CC:DD:EE:07", ip:"192.168.1.107", minutesUsed:34, status:"active",  paid:false, lastSeen:"now",        joined:"Apr 12", dataUsed:"340 MB" },
-  { id:3,  unit:"Unit 12", name:"Luisa M.",  mac:"AA:BB:CC:DD:EE:12", ip:"192.168.1.112", minutesUsed:60, status:"paid",   paid:true,  lastSeen:"now",        joined:"Apr 1",  dataUsed:"4.7 GB",  plan:"Day Pass",  paidHoursTotal:24,  paidHoursUsed:6   },
-  { id:4,  unit:"Unit 3",  name:"Deon P.",   mac:"AA:BB:CC:DD:EE:03", ip:"192.168.1.103", minutesUsed:12, status:"active",  paid:false, lastSeen:"now",        joined:"Apr 15", dataUsed:"88 MB"  },
-  { id:5,  unit:"Unit 19", name:"Susan K.",  mac:"AA:BB:CC:DD:EE:19", ip:"192.168.1.119", minutesUsed:60, status:"expired", paid:false, lastSeen:"8 min ago", joined:"Apr 9",  dataUsed:"2.1 GB" },
-  { id:6,  unit:"Unit 4",  name:"Andre W.",  mac:"AA:BB:CC:DD:EE:04", ip:"192.168.1.104", minutesUsed:60, status:"paid",   paid:true,  lastSeen:"now",        joined:"Apr 3",  dataUsed:"9.3 GB",  plan:"Week Pass", paidHoursTotal:168, paidHoursUsed:51  },
-  { id:7,  unit:"Unit 22", name:"Tina R.",   mac:"AA:BB:CC:DD:EE:22", ip:"192.168.1.122", minutesUsed:45, status:"active",  paid:false, lastSeen:"now",        joined:"Apr 14", dataUsed:"210 MB" },
-  { id:8,  unit:"Unit 8",  name:"Carlos F.", mac:"AA:BB:CC:DD:EE:08", ip:"192.168.1.108", minutesUsed:60, status:"expired", paid:false, lastSeen:"15 min ago", joined:"Apr 7",  dataUsed:"3.4 GB" },
-  { id:9,  unit:"Unit 15", name:"Priya N.",  mac:"AA:BB:CC:DD:EE:15", ip:"192.168.1.115", minutesUsed:60, status:"paid",   paid:true,  lastSeen:"now",        joined:"Apr 2",  dataUsed:"11.2 GB", plan:"Monthly",   paidHoursTotal:730, paidHoursUsed:180 },
-  { id:10, unit:"Unit 31", name:"Bobby H.",  mac:"AA:BB:CC:DD:EE:31", ip:"192.168.1.131", minutesUsed:5,  status:"active",  paid:false, lastSeen:"now",        joined:"Apr 17", dataUsed:"12 MB"  },
+  { id:1,  type:"resident", unit:"Unit 1",  name:"Maria G.",  mac:"AA:BB:CC:DD:EE:01", ip:"192.168.1.101", minutesUsed:60, status:"expired", paid:false, lastSeen:"2 min ago",  joined:"Apr 10", dataUsed:"1.2 GB" },
+  { id:2,  type:"resident", unit:"Unit 2",  name:"James T.",  mac:"AA:BB:CC:DD:EE:02", ip:"192.168.1.102", minutesUsed:34, status:"active",  paid:false, lastSeen:"now",        joined:"Apr 12", dataUsed:"340 MB" },
+  { id:3,  type:"resident", unit:"Unit 3",  name:"Luisa M.",  mac:"AA:BB:CC:DD:EE:03", ip:"192.168.1.103", minutesUsed:60, status:"paid",   paid:true,  lastSeen:"now",        joined:"Apr 1",  dataUsed:"4.7 GB",  plan:"Day Pass",  paidHoursTotal:24,  paidHoursUsed:6   },
+  { id:4,  type:"resident", unit:"Unit 4",  name:"Deon P.",   mac:"AA:BB:CC:DD:EE:04", ip:"192.168.1.104", minutesUsed:12, status:"active",  paid:false, lastSeen:"now",        joined:"Apr 15", dataUsed:"88 MB"  },
+  { id:5,  type:"resident", unit:"Unit 5",  name:"Susan K.",  mac:"AA:BB:CC:DD:EE:05", ip:"192.168.1.105", minutesUsed:60, status:"expired", paid:false, lastSeen:"8 min ago", joined:"Apr 9",  dataUsed:"2.1 GB" },
+  { id:6,  type:"resident", unit:"Unit 6",  name:"Andre W.",  mac:"AA:BB:CC:DD:EE:06", ip:"192.168.1.106", minutesUsed:60, status:"paid",   paid:true,  lastSeen:"now",        joined:"Apr 3",  dataUsed:"9.3 GB",  plan:"Week Pass", paidHoursTotal:168, paidHoursUsed:51  },
+  { id:7,  type:"resident", unit:"Unit 7",  name:"Tina R.",   mac:"AA:BB:CC:DD:EE:07", ip:"192.168.1.107", minutesUsed:45, status:"active",  paid:false, lastSeen:"now",        joined:"Apr 14", dataUsed:"210 MB" },
+  { id:8,  type:"resident", unit:"Unit 8",  name:"Carlos F.", mac:"AA:BB:CC:DD:EE:08", ip:"192.168.1.108", minutesUsed:60, status:"expired", paid:false, lastSeen:"15 min ago", joined:"Apr 7",  dataUsed:"3.4 GB" },
+  { id:9,  type:"resident", unit:"Unit 9",  name:"Priya N.",  mac:"AA:BB:CC:DD:EE:09", ip:"192.168.1.109", minutesUsed:60, status:"paid",   paid:true,  lastSeen:"now",        joined:"Apr 2",  dataUsed:"11.2 GB", plan:"Monthly",   paidHoursTotal:730, paidHoursUsed:180 },
+  { id:10, type:"resident", unit:"Unit 10", name:"Bobby H.",  mac:"AA:BB:CC:DD:EE:10", ip:"192.168.1.110", minutesUsed:5,  status:"active",  paid:false, lastSeen:"now",        joined:"Apr 17", dataUsed:"12 MB"  },
+  { id:11, type:"resident", unit:"Unit 11", name:"Yanira S.",  mac:"AA:BB:CC:DD:EE:11", ip:"192.168.1.111", minutesUsed:22, status:"active",  paid:false, lastSeen:"now",        joined:"Apr 11", dataUsed:"156 MB" },
+  { id:12, type:"resident", unit:"Unit 12", name:"Marcus J.",  mac:"AA:BB:CC:DD:EE:12", ip:"192.168.1.112", minutesUsed:58, status:"active",  paid:false, lastSeen:"now",        joined:"Apr 8",  dataUsed:"890 MB" },
+  { id:13, type:"resident", unit:"Unit 13", name:"Linda W.",  mac:"AA:BB:CC:DD:EE:13", ip:"192.168.1.113", minutesUsed:60, status:"paid",   paid:true,  lastSeen:"now",        joined:"Apr 5",  dataUsed:"6.2 GB",  plan:"Day Pass",  paidHoursTotal:24,  paidHoursUsed:12  },
+  { id:14, type:"resident", unit:"Unit 14", name:"Derek B.",  mac:"AA:BB:CC:DD:EE:14", ip:"192.168.1.114", minutesUsed:8,  status:"active",  paid:false, lastSeen:"now",        joined:"Apr 16", dataUsed:"45 MB"  },
+  { id:15, type:"resident", unit:"Unit 15", name:"Aisha K.",  mac:"AA:BB:CC:DD:EE:15", ip:"192.168.1.115", minutesUsed:60, status:"expired", paid:false, lastSeen:"5 min ago", joined:"Apr 4",  dataUsed:"2.8 GB" },
+  { id:16, type:"resident", unit:"Unit 16", name:"Frank M.",  mac:"AA:BB:CC:DD:EE:16", ip:"192.168.1.116", minutesUsed:35, status:"active",  paid:false, lastSeen:"now",        joined:"Apr 13", dataUsed:"280 MB" },
+  { id:17, type:"resident", unit:"Unit 17", name:"Grace L.",  mac:"AA:BB:CC:DD:EE:17", ip:"192.168.1.117", minutesUsed:55, status:"active",  paid:false, lastSeen:"now",        joined:"Apr 6",  dataUsed:"420 MB" },
+  { id:18, type:"resident", unit:"Unit 18", name:"Henry P.",  mac:"AA:BB:CC:DD:EE:18", ip:"192.168.1.118", minutesUsed:60, status:"paid",   paid:true,  lastSeen:"now",        joined:"Apr 1",  dataUsed:"3.1 GB",  plan:"Week Pass", paidHoursTotal:168, paidHoursUsed:84 },
+  { id:19, type:"resident", unit:"Unit 19", name:"Irene T.",  mac:"AA:BB:CC:DD:EE:19", ip:"192.168.1.119", minutesUsed:18, status:"active",  paid:false, lastSeen:"now",        joined:"Apr 10", dataUsed:"95 MB" },
+  { id:20, type:"resident", unit:"Unit 20", name:"Jack R.",   mac:"AA:BB:CC:DD:EE:20", ip:"192.168.1.120", minutesUsed:42, status:"active",  paid:false, lastSeen:"now",        joined:"Apr 9",  dataUsed:"310 MB" },
+  { id:21, type:"resident", unit:"Unit 21", name:"Karen S.",  mac:"AA:BB:CC:DD:EE:21", ip:"192.168.1.121", minutesUsed:60, status:"expired", paid:false, lastSeen:"10 min ago", joined:"Apr 2",  dataUsed:"1.9 GB" },
+  { id:22, type:"resident", unit:"Unit 22", name:"Leo W.",    mac:"AA:BB:CC:DD:EE:22", ip:"192.168.1.122", minutesUsed:29, status:"active",  paid:false, lastSeen:"now",        joined:"Apr 11", dataUsed:"175 MB" },
+  { id:23, type:"resident", unit:"Unit 23", name:"Mona D.",   mac:"AA:BB:CC:DD:EE:23", ip:"192.168.1.123", minutesUsed:51, status:"active",  paid:false, lastSeen:"now",        joined:"Apr 7",  dataUsed:"445 MB" },
+  { id:24, type:"resident", unit:"Unit 24", name:"Nick C.",   mac:"AA:BB:CC:DD:EE:24", ip:"192.168.1.124", minutesUsed:60, status:"paid",   paid:true,  lastSeen:"now",        joined:"Apr 3",  dataUsed:"7.8 GB",  plan:"Month",   paidHoursTotal:730, paidHoursUsed:120 },
+  { id:25, type:"resident", unit:"Unit 25", name:"Olivia B.",  mac:"AA:BB:CC:DD:EE:25", ip:"192.168.1.125", minutesUsed:14, status:"active",  paid:false, lastSeen:"now",        joined:"Apr 14", dataUsed:"68 MB" },
+  { id:26, type:"resident", unit:"Unit 26", name:"Paul K.",   mac:"AA:BB:CC:DD:EE:26", ip:"192.168.1.126", minutesUsed:60, status:"expired", paid:false, lastSeen:"3 min ago", joined:"Apr 5",  dataUsed:"2.3 GB" },
+  { id:27, type:"resident", unit:"Unit 27", name:"Quinn M.",  mac:"AA:BB:CC:DD:EE:27", ip:"192.168.1.127", minutesUsed:38, status:"active",  paid:false, lastSeen:"now",        joined:"Apr 12", dataUsed:"290 MB" },
+  { id:28, type:"resident", unit:"Unit 28", name:"Rachel H.",  mac:"AA:BB:CC:DD:EE:28", ip:"192.168.1.128", minutesUsed:20, status:"active",  paid:false, lastSeen:"now",        joined:"Apr 15", dataUsed:"112 MB" },
+  { id:29, type:"resident", unit:"Unit 29", name:"Steve G.",  mac:"AA:BB:CC:DD:EE:29", ip:"192.168.1.129", minutesUsed:55, status:"active",  paid:false, lastSeen:"now",        joined:"Apr 8",  dataUsed:"380 MB" },
+  { id:30, type:"resident", unit:"Unit 30", name:"Tara F.",   mac:"AA:BB:CC:DD:EE:30", ip:"192.168.1.130", minutesUsed:60, status:"paid",   paid:true,  lastSeen:"now",        joined:"Apr 4",  dataUsed:"5.5 GB",  plan:"Week Pass", paidHoursTotal:168, paidHoursUsed:72 },
+  { id:31, type:"guest",    unit:"Guest-001", name:"Visitor - Smith Family", mac:"AA:BB:CC:DD:FF:01", ip:"192.168.2.201", minutesUsed:45, status:"active",  paid:false, lastSeen:"now",        joined:"Today",   dataUsed:"320 MB",  guestEvent:"Sunday Service" },
+  { id:32, type:"guest",    unit:"Guest-002", name:"Visitor - Johnson",     mac:"AA:BB:CC:DD:FF:02", ip:"192.168.2.202", minutesUsed:28, status:"active",  paid:false, lastSeen:"now",        joined:"Today",   dataUsed:"85 MB",   guestEvent:"Bible Study" },
+  { id:33, type:"guest",    unit:"Guest-003", name:"Visitor - Williams",    mac:"AA:BB:CC:DD:FF:03", ip:"192.168.2.203", minutesUsed:60, status:"expired", paid:false, lastSeen:"12 min ago", joined:"Today",   dataUsed:"1.1 GB", guestEvent:"Wednesday Service" },
+  { id:34, type:"guest",    unit:"Guest-004", name:"Visitor - Brown",       mac:"AA:BB:CC:DD:FF:04", ip:"192.168.2.204", minutesUsed:15, status:"active",  paid:false, lastSeen:"now",        joined:"Today",   dataUsed:"42 MB",   guestEvent:"Youth Group" },
+  { id:35, type:"guest",    unit:"Guest-005", name:"Visitor - Davis",      mac:"AA:BB:CC:DD:FF:05", ip:"192.168.2.205", minutesUsed:52, status:"active",  paid:false, lastSeen:"now",        joined:"Today",   dataUsed:"410 MB", guestEvent:"Sunday Service" },
 ];
 
 const INITIAL_EVENTS = [
@@ -36,8 +61,11 @@ const INITIAL_TENANT_POSTS = [
 
 const INITIAL_MAINT = [
   { id:1, unit:"Unit 7",  category:"plumbing", message:"Kitchen sink draining slowly, been like this 3 days.", date:"Apr 19", status:"new"        },
-  { id:2, unit:"Unit 12", category:"electric",  message:"Outlet in bathroom stopped working after the storm.",  date:"Apr 18", status:"in_progress" },
-  { id:3, unit:"Unit 3",  category:"ac",       message:"AC not cooling properly, room stays above 80 degrees.",date:"Apr 17", status:"resolved"   },
+  { id:2, unit:"Unit 12", category:"electric", message:"Outlet in bathroom stopped working after the storm.", date:"Apr 18", status:"in_progress" },
+  { id:3, unit:"Unit 3",  category:"ac",       message:"AC not cooling properly, room stays above 80 degrees.", date:"Apr 17", status:"resolved"   },
+  { id:4, unit:"Unit 15", category:"pest",     message:"Seeing cockroaches in kitchen area.",           date:"Apr 20", status:"new"        },
+  { id:5, unit:"Unit 22", category:"appliance", message:"Refrigerator not cooling properly.",            date:"Apr 18", status:"new"        },
+  { id:6, unit:"Unit 5",  category:"general",   message:"Front door lock is sticky.",                   date:"Apr 15", status:"resolved"   },
 ];
 
 const PLANS = [
@@ -57,7 +85,7 @@ const TENANT_CATS  = [
   { id:"parking",      label:"🚗 Parking",        color:"#f472b6" },
 ];
 const MAINT_CATS   = ["plumbing","electric","ac","general","pest","appliance"];
-const UNITS        = Array.from({length:60},(_,i)=>`Unit ${i+1}`);
+const UNITS        = Array.from({length:30},(_,i)=>`Unit ${i+1}`);
 const SCRIPTURES   = [
   { verse:"Share with the Lord's people who are in need. Practice hospitality.", ref:"Romans 12:13" },
   { verse:"For where two or three gather in my name, there am I with them.",       ref:"Matthew 18:20" },
@@ -729,6 +757,11 @@ function Admin({ events, setEvents, posts, setPosts, maint, setMaint }) {
   const [toast,  setToast]  = useState(null);
   const [filter, setFilter] = useState("all");
   const [tab,    setTab]    = useState("sessions");
+  const [typeFilter, setTypeFilter] = useState("all");
+  const [maintView, setMaintView] = useState("active");
+  const [maintUnit, setMaintUnit] = useState("Unit 1");
+  const [maintCat, setMaintCat] = useState("general");
+  const [maintMsg, setMaintMsg] = useState("");
 
   const [vcodes, setVcodes] = useState([]);
   const [vtype,  setVtype]  = useState("day");
@@ -750,7 +783,7 @@ function Admin({ events, setEvents, posts, setPosts, maint, setMaint }) {
   const paid    = users.filter(u=>u.status==="paid").length;
   const revenue = users.filter(u=>u.paid).length*5;
   const newMaint= maint.filter(r=>r.status==="new").length;
-  const filtered= filter==="all"?users:users.filter(u=>u.status===filter);
+  const filtered= (filter==="all"?users : filter==="resident"?users.filter(u=>u.type==="resident") : filter==="guest"?users.filter(u=>u.type==="guest") : users.filter(u=>u.status===filter)).filter(u => typeFilter === "all" || u.type === typeFilter);
 
   function toast2(m){ setToast(m); setTimeout(()=>setToast(null),2200); }
   function grantTime(id){ setUsers(u=>u.map(x=>x.id===id?{...x,minutesUsed:0,status:"active"}:x)); toast2("✓ 60 minutes granted"); }
@@ -789,13 +822,20 @@ function Admin({ events, setEvents, posts, setPosts, maint, setMaint }) {
       </div>
 
       {tab==="sessions" && <>
-        <div className="tabs" style={{marginBottom:12}}>
-          {["all","active","paid","expired"].map(f=>(
-            <button key={f} className="tab" onClick={()=>setFilter(f)}
-              style={{background:filter===f?"var(--accent)":"transparent",color:filter===f?"#fff":"var(--muted)",borderColor:filter===f?"var(--accent)":"var(--border)",textTransform:"capitalize"}}>
-              {f==="all"?`All (${users.length})`:`${f[0].toUpperCase()+f.slice(1)} (${users.filter(u=>u.status===f).length})`}
-            </button>
-          ))}
+        <div style={{display:"flex",gap:6,marginBottom:12,flexWrap:"wrap",alignItems:"center"}}>
+          <div style={{display:"flex",background:"var(--surface)",border:"1px solid var(--border)",borderRadius:8,padding:3}}>
+            <button onClick={()=>setTypeFilter("all")} style={{padding:"6px 12px",borderRadius:6,border:"none",background:typeFilter==="all"?"var(--accent)":"transparent",color:typeFilter==="all"?"#fff":"var(--muted)",fontSize:11,fontWeight:700,cursor:"pointer"}}>All Users</button>
+            <button onClick={()=>setTypeFilter("resident")} style={{padding:"6px 12px",borderRadius:6,border:"none",background:typeFilter==="resident"?"var(--accent)":"transparent",color:typeFilter==="resident"?"#fff":"var(--muted)",fontSize:11,fontWeight:700,cursor:"pointer"}}>🏠 Residents</button>
+            <button onClick={()=>setTypeFilter("guest")} style={{padding:"6px 12px",borderRadius:6,border:"none",background:typeFilter==="guest"?"#a78bfa":"transparent",color:typeFilter==="guest"?"#fff":"var(--muted)",fontSize:11,fontWeight:700,cursor:"pointer"}}>👤 Guests</button>
+          </div>
+          <div style={{marginLeft:"auto",display:"flex",gap:4}}>
+            {["all","active","paid","expired"].map(f=>(
+              <button key={f} className="tab" onClick={()=>setFilter(f)}
+                style={{background:filter===f?"var(--accent)":"transparent",color:filter===f?"#fff":"var(--muted)",borderColor:filter===f?"var(--accent)":"var(--border)",padding:"5px 10px",fontSize:10}}>
+                {f==="all"?`All (${filtered.length})`:f[0].toUpperCase()+f.slice(1)}
+              </button>
+            ))}
+          </div>
         </div>
         <div className="sec-lbl">Users — {filtered.length} shown</div>
         <div className="ucards">
@@ -804,7 +844,12 @@ function Admin({ events, setEvents, posts, setPosts, maint, setMaint }) {
             return (
               <div className="uc" key={u.id}>
                 <div className="uc-top">
-                  <div><div className="uc-name">{u.name}</div><div className="uc-unit">{u.unit}</div></div>
+                  <div>
+                    <div className="uc-name">
+                      {u.type==="guest" ? <span style={{color:"#a78bfa",fontWeight:700}}>👤 </span> : <span style={{color:"#22c55e",fontWeight:700}}>🏠 </span>}{u.name}
+                    </div>
+                    <div className="uc-unit">{u.unit}</div>
+                  </div>
                   <span className={`spill sp-${u.status}`}>{u.status==="paid"?`Paid · ${u.plan}`:u.status[0].toUpperCase()+u.status.slice(1)}</span>
                 </div>
                 <div className="ugrid">
@@ -812,6 +857,11 @@ function Admin({ events, setEvents, posts, setPosts, maint, setMaint }) {
                   <div><div className="ufl">Data</div><div className="ufv mono">{u.dataUsed}</div></div>
                   <div><div className="ufl">MAC</div><div className="ufv mono">{u.mac}</div></div>
                   <div><div className="ufl">Last Seen</div><div className="ufv">{u.lastSeen}</div></div>
+                  {u.type==="guest" && u.guestEvent && (
+                    <div style={{gridColumn:"1 / -1", marginTop:u.guestEvent?"4px":"0"}}>
+                      <div className="ufl" style={{color:"#a78bfa"}}>Event</div><div className="ufv" style={{color:"#a78bfa",fontWeight:600}}>{u.guestEvent}</div>
+                    </div>
+                  )}
                 </div>
                 <div className="ubar-row">
                   <div className="ubar-top"><span className="ubar-lbl">Free Daily (60 min)</span><span className="ubar-val">{u.minutesUsed}/60</span></div>
@@ -954,22 +1004,72 @@ function Admin({ events, setEvents, posts, setPosts, maint, setMaint }) {
       {tab==="map" && <PropertyMap users={users} maint={maint} setMaint={setMaint} setUsers={setUsers} toast2={toast2}/>}
 
       {tab==="maint" && <>
-        <div className="sec-lbl">Maintenance Requests — {maint.length} total · {newMaint} new</div>
-        {maint.length===0&&<div style={{textAlign:"center",padding:"26px 0",color:"var(--muted)",fontSize:13}}>No maintenance requests yet.</div>}
-        {maint.map((r,i)=>(
-          <div className="mcard" key={r.id||i}>
-            <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
-              <div><div style={{fontSize:13,fontWeight:700}}>{r.unit}</div><div style={{fontSize:11,color:"var(--muted)",marginTop:1,textTransform:"capitalize"}}>{r.category} · {r.date}</div></div>
-              <span className={`mst mst-${r.status}`}>{r.status.replace("_"," ")}</span>
+        <div style={{display:"flex",gap:8,marginBottom:14,flexWrap:"wrap",alignItems:"center"}}>
+          <button className="btn" style={{flex:"unset",padding:"10px 20px",fontSize:12}} onClick={()=>setMaintView("active")}>🔧 Active ({maint.filter(r=>r.status!=="resolved").length})</button>
+          <button className="btn sec" style={{flex:"unset",padding:"10px 20px",fontSize:12}} onClick={()=>setMaintView("history")}>📋 History / All ({maint.length})</button>
+          <button className="btn" style={{flex:"unset",padding:"10px 20px",fontSize:12,background:"var(--accent2)"}} onClick={()=>setMaintView("add")}>➕ New Request</button>
+        </div>
+
+        {maintView==="add" && (
+          <div className="aform" style={{marginBottom:16,borderColor:"var(--accent)",background:"var(--sbg)"}}>
+            <div style={{fontSize:14,fontWeight:700,marginBottom:12,color:"var(--accent)"}}>➕ Add New Maintenance Request</div>
+            <div style={{display:"flex",gap:7,marginBottom:8,flexWrap:"wrap"}}>
+              <select className="fsel" value={maintUnit} onChange={e=>setMaintUnit(e.target.value)} style={{flex:"0 0 100px"}}>
+                {UNITS.map(u=><option key={u}>{u}</option>)}
+              </select>
+              <select className="fsel" value={maintCat} onChange={e=>setMaintCat(e.target.value)} style={{flex:"0 0 100px"}}>
+                {MAINT_CATS.map(c=><option key={c} value={c}>{c.charAt(0).toUpperCase()+c.slice(1)}</option>)}
+              </select>
             </div>
-            <div style={{fontSize:12,color:"var(--muted)",lineHeight:1.6,marginBottom:10}}>{r.message}</div>
-            <div style={{display:"flex",gap:6}}>
-              {r.status!=="in_progress"&&<button className="abtn" style={{background:"#fff7ed",color:"var(--warn)",border:"1px solid #fed7aa",padding:"6px 0",fontSize:10}} onClick={()=>setMaint(rs=>rs.map((x,j)=>j===i?{...x,status:"in_progress"}:x))}>In Progress</button>}
-              {r.status!=="resolved"&&<button className="abtn abtn-g" style={{padding:"6px 0",fontSize:10}} onClick={()=>setMaint(rs=>rs.map((x,j)=>j===i?{...x,status:"resolved"}:x))}>Mark Resolved</button>}
-              <button className="abtn abtn-r" style={{flex:"unset",padding:"6px 12px",fontSize:10}} onClick={()=>setMaint(rs=>rs.filter((_,j)=>j!==i))}>Remove</button>
+            <textarea className="fta" placeholder="Describe the issue in detail..." value={maintMsg} onChange={e=>setMaintMsg(e.target.value)} style={{marginBottom:8,minHeight:80}}/>
+            <div style={{display:"flex",gap:7}}>
+              <button className="btn" style={{fontSize:12,padding:"10px",flex:1}} onClick={()=>{ if(!maintMsg.trim()){toast2("Please describe the issue");return;} setMaint(r=>[...r,{id:Date.now(),unit:maintUnit,category:maintCat,message:maintMsg.trim(),date:new Date().toLocaleDateString("en-US",{month:"short",day:"numeric"}),status:"new"}]); setMaintMsg(""); toast2("✓ Request added"); setMaintView("active"); }}>Submit Request</button>
+              <button className="btn sec" style={{fontSize:12,padding:"10px",flex:"unset",minWidth:80}} onClick={()=>setMaintView("active")}>Cancel</button>
             </div>
           </div>
-        ))}
+        )}
+
+        {maintView==="history" && (
+          <div style={{marginBottom:16}}>
+            <div style={{fontSize:11,color:"var(--muted)",marginBottom:10,display:"flex",gap:6}}>
+              <span>Showing all {maint.length} requests</span>
+            </div>
+            {maint.map((r,i)=>(
+              <div className="mcard" key={r.id||i} style={{opacity:r.status==="resolved"?0.6:1}}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:6}}>
+                  <div><div style={{fontSize:13,fontWeight:700}}>{r.unit}</div><div style={{fontSize:11,color:"var(--muted)",marginTop:1,textTransform:"capitalize"}}>{r.category} · {r.date}</div></div>
+                  <span className={`mst mst-${r.status}`}>{r.status.replace("_"," ")}</span>
+                </div>
+                <div style={{fontSize:12,color:"var(--muted)",lineHeight:1.5}}>{r.message}</div>
+                <div style={{display:"flex",gap:5,marginTop:8,borderTop:"1px solid var(--border)",paddingTop:8}}>
+                  <button className="abtn abtn-g" style={{padding:"5px 8px",fontSize:9}} onClick={()=>setMaint(rs=>rs.map((x,j)=>j===i?{...x,unit:r.unit,category:r.category,message:r.message,date:r.date,status:r.status==="resolved"?"new":"resolved"}:x))}>{r.status==="resolved"?"Reopen":"Toggle Status"}</button>
+                  <button className="abtn abtn-r" style={{padding:"5px 8px",fontSize:9}} onClick={()=>{setMaint(rs=>rs.filter((_,j)=>j!==i));toast2("Request removed");}}>Delete</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {maintView==="active" && (
+          <>
+            <div className="sec-lbl">Active Requests — {maint.filter(r=>r.status!=="resolved").length} open · {newMaint} new</div>
+            {maint.filter(r=>r.status!=="resolved").length===0 && <div style={{textAlign:"center",padding:"26px 0",color:"var(--muted)",fontSize:13}}>No active requests. All caught up! ✅</div>}
+            {maint.filter(r=>r.status!=="resolved").map((r,i)=>(
+              <div className="mcard" key={r.id||i}>
+                <div style={{display:"flex",justifyContent:"space-between",alignItems:"center",marginBottom:8}}>
+                  <div><div style={{fontSize:13,fontWeight:700}}>{r.unit}</div><div style={{fontSize:11,color:"var(--muted)",marginTop:1,textTransform:"capitalize"}}>{r.category} · {r.date}</div></div>
+                  <span className={`mst mst-${r.status}`}>{r.status.replace("_"," ")}</span>
+                </div>
+                <div style={{fontSize:12,color:"var(--muted)",lineHeight:1.6,marginBottom:10}}>{r.message}</div>
+                <div style={{display:"flex",gap:6}}>
+                  {r.status!=="in_progress"&&<button className="abtn" style={{background:"#fff7ed",color:"var(--warn)",border:"1px solid #fed7aa",padding:"6px 0",fontSize:10}} onClick={()=>setMaint(rs=>rs.map((x,j)=>x.id===r.id?{...x,status:"in_progress"}:x))}>In Progress</button>}
+                  {r.status!=="resolved"&&<button className="abtn abtn-g" style={{padding:"6px 0",fontSize:10}} onClick={()=>setMaint(rs=>rs.map((x,j)=>x.id===r.id?{...x,status:"resolved"}:x))}>Mark Resolved</button>}
+                  <button className="abtn abtn-r" style={{flex:"unset",padding:"6px 12px",fontSize:10}} onClick={()=>setMaint(rs=>rs.filter((_,j)=>rs[j]?.id===r.id))}>Remove</button>
+                </div>
+              </div>
+            ))}
+          </>
+        )}
       </>}
 
       {toast&&<div className="toast">{toast}</div>}

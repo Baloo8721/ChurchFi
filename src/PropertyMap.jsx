@@ -6,25 +6,69 @@ const DEFAULT_DATA = {
   buildings: [
     { id: "church", label: "CHURCH", sublabel: "Sanctuary", x: 125, y: 120, w: 120, h: 100, color: "#22c55e", type: "church", floors: 1 },
     { id: "school", label: "SCHOOL", sublabel: "Academy", x: 125, y: 380, w: 80, h: 65, color: "#38bdf8", type: "school", floors: 1 },
-    { id: "home1", label: "HOME", sublabel: "Unit 1", x: 55, y: 290, w: 30, h: 25, color: "#22c55e", type: "residential", floors: 1 },
+    { id: "home1", label: "BUILDING A", sublabel: "Units 1-10", x: 55, y: 260, w: 70, h: 55, color: "#22c55e", type: "residential", floors: 1 },
+    { id: "home2", label: "BUILDING B", sublabel: "Units 11-20", x: 180, y: 260, w: 70, h: 55, color: "#22c55e", type: "residential", floors: 1 },
+    { id: "home3", label: "BUILDING C", sublabel: "Units 21-30", x: 55, y: 350, w: 70, h: 55, color: "#22c55e", type: "residential", floors: 1 },
   ],
   units: [
-    { id: 1, label: "U1", building: "home1", rx: 70, ry: 302, floor: 1 },
+    { id: 1, label: "Unit 1", unitNum: 1, building: "home1", rx: 68, ry: 280, floor: 1 },
+    { id: 2, label: "Unit 2", unitNum: 2, building: "home1", rx: 82, ry: 280, floor: 1 },
+    { id: 3, label: "Unit 3", unitNum: 3, building: "home1", rx: 96, ry: 280, floor: 1 },
+    { id: 4, label: "Unit 4", unitNum: 4, building: "home1", rx: 110, ry: 280, floor: 1 },
+    { id: 5, label: "Unit 5", unitNum: 5, building: "home1", rx: 68, ry: 298, floor: 1 },
+    { id: 6, label: "Unit 6", unitNum: 6, building: "home1", rx: 82, ry: 298, floor: 1 },
+    { id: 7, label: "Unit 7", unitNum: 7, building: "home1", rx: 96, ry: 298, floor: 1 },
+    { id: 8, label: "Unit 8", unitNum: 8, building: "home1", rx: 110, ry: 298, floor: 1 },
+    { id: 9, label: "Unit 9", unitNum: 9, building: "home1", rx: 68, ry: 316, floor: 1 },
+    { id: 10, label: "Unit 10", unitNum: 10, building: "home1", rx: 82, ry: 316, floor: 1 },
+    { id: 11, label: "Unit 11", unitNum: 11, building: "home2", rx: 193, ry: 280, floor: 1 },
+    { id: 12, label: "Unit 12", unitNum: 12, building: "home2", rx: 207, ry: 280, floor: 1 },
+    { id: 13, label: "Unit 13", unitNum: 13, building: "home2", rx: 221, ry: 280, floor: 1 },
+    { id: 14, label: "Unit 14", unitNum: 14, building: "home2", rx: 235, ry: 280, floor: 1 },
+    { id: 15, label: "Unit 15", unitNum: 15, building: "home2", rx: 193, ry: 298, floor: 1 },
+    { id: 16, label: "Unit 16", unitNum: 16, building: "home2", rx: 207, ry: 298, floor: 1 },
+    { id: 17, label: "Unit 17", unitNum: 17, building: "home2", rx: 221, ry: 298, floor: 1 },
+    { id: 18, label: "Unit 18", unitNum: 18, building: "home2", rx: 235, ry: 298, floor: 1 },
+    { id: 19, label: "Unit 19", unitNum: 19, building: "home2", rx: 193, ry: 316, floor: 1 },
+    { id: 20, label: "Unit 20", unitNum: 20, building: "home2", rx: 207, ry: 316, floor: 1 },
+    { id: 21, label: "Unit 21", unitNum: 21, building: "home3", rx: 68, ry: 370, floor: 1 },
+    { id: 22, label: "Unit 22", unitNum: 22, building: "home3", rx: 82, ry: 370, floor: 1 },
+    { id: 23, label: "Unit 23", unitNum: 23, building: "home3", rx: 96, ry: 370, floor: 1 },
+    { id: 24, label: "Unit 24", unitNum: 24, building: "home3", rx: 110, ry: 370, floor: 1 },
+    { id: 25, label: "Unit 25", unitNum: 25, building: "home3", rx: 68, ry: 388, floor: 1 },
+    { id: 26, label: "Unit 26", unitNum: 26, building: "home3", rx: 82, ry: 388, floor: 1 },
+    { id: 27, label: "Unit 27", unitNum: 27, building: "home3", rx: 96, ry: 388, floor: 1 },
+    { id: 28, label: "Unit 28", unitNum: 28, building: "home3", rx: 110, ry: 388, floor: 1 },
+    { id: 29, label: "Unit 29", unitNum: 29, building: "home3", rx: 68, ry: 406, floor: 1 },
+    { id: 30, label: "Unit 30", unitNum: 30, building: "home3", rx: 82, ry: 406, floor: 1 },
   ],
   cameras: [
     { id: "cam1", label: "Front", x: 185, y: 120, status: "online", zone: "West" },
     { id: "cam2", label: "Parking", x: 580, y: 200, status: "online", zone: "East" },
+    { id: "cam3", label: "East Side", x: 400, y: 300, status: "online", zone: "East" },
+    { id: "cam4", label: "Rear", x: 100, y: 400, status: "offline", zone: "West" },
   ],
   wifiZones: [
     { id: "wifi1", x: 250, y: 250, radius: 100 },
+    { id: "wifi2", x: 180, ry: 300, radius: 70 },
   ]
 };
 
 const loadData = () => {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) return JSON.parse(saved);
-  } catch (e) { console.error("Load error:", e); }
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      if (parsed.units && parsed.units.length > 0) {
+        const hasBadData = parsed.units.some(u => !u.unitNum || u.unitNum > 30 || u.unitNum < 1);
+        if (hasBadData || parsed.units.length !== 30) {
+          localStorage.removeItem(STORAGE_KEY);
+          return DEFAULT_DATA;
+        }
+      }
+      return parsed;
+    }
+  } catch (e) { console.error("Load error:", e); localStorage.removeItem(STORAGE_KEY); }
   return DEFAULT_DATA;
 };
 
@@ -44,6 +88,7 @@ function PropertyMap({ users, maint, setMaint, toast2 }) {
   const [expand, setExpand] = useState(false);
   const [selUnit, setSelUnit] = useState(null);
   const [selCam, setSelCam] = useState(null);
+  const [selBuilding, setSelBuilding] = useState(null);
   const [layers, setLayers] = useState({ wifi: true, cameras: true, units: true, alerts: true });
   const [pulse, setPulse] = useState(true);
   const [hover, setHover] = useState(null);
@@ -63,21 +108,24 @@ function PropertyMap({ users, maint, setMaint, toast2 }) {
   const { buildings, units, cameras, wifiZones } = propertyData;
 
   function uStatus(uid) {
-    const u = users.find(x => x.id === uid);
+    const unit = units.find(x => x.id === uid);
+    if (!unit) return "offline";
+    const u = users.find(x => (x.type === "resident" || !x.type) && x.unit === `Unit ${unit.unitNum}`);
     return u ? u.status : "offline";
   }
 
   function uMaint(uid) {
-    const u = users.find(x => x.id === uid);
-    if (!u) return [];
-    return maint.filter(r => r.unit === u.unit && r.status !== "resolved");
+    const unit = units.find(x => x.id === uid);
+    if (!unit) return [];
+    return maint.filter(r => r.unit === `Unit ${unit.unitNum}` && r.status !== "resolved");
   }
 
   function uData(uid) { return users.find(x => x.id === uid) || null; }
 
-  const activeCount = users.filter(u => u.status === "active").length;
-  const paidCount = users.filter(u => u.status === "paid").length;
-  const expiredCount = users.filter(u => u.status === "expired").length;
+  const residentUsers = users.filter(u => u.type === "resident");
+  const activeCount = residentUsers.filter(u => u.status === "active").length;
+  const paidCount = residentUsers.filter(u => u.status === "paid").length;
+  const expiredCount = residentUsers.filter(u => u.status === "expired").length;
   const alertCount = maint.filter(r => r.status !== "resolved").length;
   const camOnline = cameras.filter(c => c.status === "online").length;
 
@@ -113,21 +161,27 @@ function PropertyMap({ users, maint, setMaint, toast2 }) {
       const st = uStatus(firstUnit.id);
       const reqs = uMaint(firstUnit.id);
       const ud = uData(firstUnit.id);
-      setSelUnit({ ...firstUnit, label: bld.label, buildingName: bld.sublabel, status: st, reqs, userData: ud, isBuilding: true, allBuildingUnits: bUnits });
+      setSelBuilding(bld);
+      clearAll();
     }
   }
 
   function handleUnitClick(unit) {
     const bld = buildings.find(b => b.id === unit.building);
-    const st = uStatus(unit.id);
-    const reqs = uMaint(unit.id);
-    const ud = uData(unit.id);
-    setSelUnit({ ...unit, label: bld?.label || unit.label, buildingName: bld?.sublabel, status: st, reqs, userData: ud });
+    const wifiUser = users.find(u => u.type === "resident" && u.unit === `Unit ${unit.unitNum}`);
+    const unitReqs = maint.filter(r => r.unit === `Unit ${unit.unitNum}` && r.status !== "resolved");
+    setSelUnit({ ...unit, buildingName: bld?.sublabel, buildingLabel: bld?.label, maintRequests: unitReqs, wifiUser });
     setSelCam(null);
+    setSelBuilding(null);
   }
 
-  function clearAll() { setSelUnit(null); setSelCam(null); setSelectedForEdit(null); setDragging(null); setDrawing(null); }
-  function resetData() { if (confirm("Reset to default? All custom buildings will be lost.")) { setPropertyData(DEFAULT_DATA); } }
+  function clearAll() { setSelUnit(null); setSelCam(null); setSelBuilding(null); setSelectedForEdit(null); setDragging(null); setDrawing(null); }
+  function resetData() { 
+    if (confirm("Reset to default? All custom buildings will be lost.")) { 
+      localStorage.removeItem(STORAGE_KEY);
+      setPropertyData(DEFAULT_DATA); 
+    } 
+  }
 
   function getSvgCoords(e, svg) {
     const rect = svg.getBoundingClientRect();
@@ -694,21 +748,44 @@ function PropertyMap({ users, maint, setMaint, toast2 }) {
 
       {/* Unit detail */}
       {selUnit && (
-        <div style={{ background: "var(--card)", border: `1px solid ${STATUS_COLOR[selUnit.status]}55`, borderRadius: 14, padding: 14, marginTop: 12 }}>
+        <div style={{ background: "var(--card)", border: `1px solid ${selUnit.wifiUser ? STATUS_COLOR[selUnit.wifiUser.status] + "55" : "#ddd"}`, borderRadius: 14, padding: 14, marginTop: 12 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
             <div>
-              <div style={{ fontSize: 15, fontWeight: 700 }}>{selUnit.userData?.unit || selUnit.label}</div>
-              <div style={{ fontSize: 11, color: "var(--muted)" }}>{selUnit.userData?.name || selUnit.buildingName || "Unoccupied"}</div>
+              {editMode ? (
+                <input 
+                  value={selUnit.label} 
+                  onChange={e => { const v = e.target.value; setSelUnit(s => ({...s, label: v})); setPropertyData(p => ({...p, units: p.units.map(u => u.id === selUnit.id ? {...u, label: v} : u)})); }} 
+                  style={{ fontSize: 14, fontWeight: 700, background: "var(--surface)", border: "1px solid var(--border)", padding: "4px 8px", borderRadius: 4, width: 80 }} 
+                />
+              ) : (
+                <div style={{ fontSize: 15, fontWeight: 700 }}>{selUnit.label}</div>
+              )}
+              <div style={{ fontSize: 11, color: "var(--muted)" }}>{selUnit.wifiUser?.name || selUnit.buildingName || "Unassigned"}</div>
             </div>
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              <span style={{ fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 20, background: STATUS_COLOR[selUnit.status] + "22", color: STATUS_COLOR[selUnit.status] }}>{STATUS_LABEL[selUnit.status]}</span>
+              <span style={{ fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 20, background: selUnit.wifiUser ? STATUS_COLOR[selUnit.wifiUser.status] + "22" : "#ddd", color: selUnit.wifiUser ? STATUS_COLOR[selUnit.wifiUser.status] : "#666" }}>
+                {selUnit.wifiUser ? STATUS_LABEL[selUnit.wifiUser.status] : "No Device"}
+              </span>
               <button onClick={() => setSelUnit(null)} style={{ background: "none", border: "none", color: "var(--muted)", cursor: "pointer", fontSize: 18 }}>✕</button>
             </div>
           </div>
-          {selUnit.userData && (
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
-              {[{ l: "IP", v: selUnit.userData.ip }, { l: "Data", v: selUnit.userData.dataUsed }, { l: "Last Seen", v: selUnit.userData.lastSeen }, { l: "Used", v: `${selUnit.userData.minutesUsed}/60 min` }].map(f => (
-                <div key={f.l}><div style={{ fontSize: 9, color: "var(--muted)", textTransform: "uppercase" }}>{f.l}</div><div style={{ fontSize: 11, fontFamily: "'DM Mono',monospace" }}>{f.v}</div></div>
+          
+          {selUnit.wifiUser && (
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 10 }}>
+              <div><div style={{ fontSize: 9, color: "var(--muted)", textTransform: "uppercase" }}>IP</div><div style={{ fontSize: 11, fontFamily: "'DM Mono',monospace" }}>{selUnit.wifiUser.ip}</div></div>
+              <div><div style={{ fontSize: 9, color: "var(--muted)", textTransform: "uppercase" }}>MAC</div><div style={{ fontSize: 11, fontFamily: "'DM Mono',monospace" }}>{selUnit.wifiUser.mac}</div></div>
+              <div><div style={{ fontSize: 9, color: "var(--muted)", textTransform: "uppercase" }}>Data</div><div style={{ fontSize: 11, fontFamily: "'DM Mono',monospace" }}>{selUnit.wifiUser.dataUsed}</div></div>
+              <div><div style={{ fontSize: 9, color: "var(--muted)", textTransform: "uppercase" }}>Last Seen</div><div style={{ fontSize: 11, fontFamily: "'DM Mono',monospace" }}>{selUnit.wifiUser.lastSeen}</div></div>
+            </div>
+          )}
+
+          {selUnit.maintRequests && selUnit.maintRequests.length > 0 && (
+            <div style={{ marginTop: 8, paddingTop: 8, borderTop: "1px solid var(--border)" }}>
+              <div style={{ fontSize: 9, color: "#dc2626", fontWeight: 700, marginBottom: 4, textTransform: "uppercase" }}>⚠ Maintenance ({selUnit.maintRequests.length})</div>
+              {selUnit.maintRequests.map(r => (
+                <div key={r.id} style={{ fontSize: 10, background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 4, padding: 6, marginBottom: 4 }}>
+                  <span style={{ fontWeight: 700, color: "#dc2626" }}>{r.category}</span> - {r.message} <span style={{ color: "#666" }}>({r.date})</span>
+                </div>
               ))}
             </div>
           )}
@@ -720,13 +797,45 @@ function PropertyMap({ users, maint, setMaint, toast2 }) {
         <div style={{ background: "var(--card)", border: `1px solid ${selCam.status === "online" ? "#38bdf833" : "#f8717133"}`, borderRadius: 14, padding: 14, marginTop: 12 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div>
-              <div style={{ fontSize: 15, fontWeight: 700 }}>📷 {selCam.label}</div>
+              {editMode ? (
+                <input 
+                  value={selCam.label} 
+                  onChange={e => { const v = e.target.value; setSelCam(s => ({...s, label: v})); setPropertyData(p => ({...p, cameras: p.cameras.map(c => c.id === selCam.id ? {...c, label: v} : c)})); }} 
+                  style={{ fontSize: 14, fontWeight: 700, background: "var(--surface)", border: "1px solid var(--border)", padding: "4px 8px", borderRadius: 4, width: 100 }} 
+                />
+              ) : (
+                <div style={{ fontSize: 15, fontWeight: 700 }}>📷 {selCam.label}</div>
+              )}
               <div style={{ fontSize: 11, color: "var(--muted)", fontFamily: "'DM Mono',monospace" }}>{selCam.zone || "Property"}</div>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
               <div style={{ width: 6, height: 6, borderRadius: "50%", background: selCam.status === "online" ? "#38bdf8" : "#f87171" }} />
               <span style={{ fontSize: 10, fontWeight: 700, color: selCam.status === "online" ? "#38bdf8" : "#f87171" }}>{selCam.status.toUpperCase()}</span>
               <button onClick={() => setSelCam(null)} style={{ background: "none", border: "none", color: "var(--muted)", cursor: "pointer", fontSize: 18, marginLeft: 8 }}>✕</button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Building detail */}
+      {selBuilding && (
+        <div style={{ background: "var(--card)", border: `1px solid ${selBuilding.color}55`, borderRadius: 14, padding: 14, marginTop: 12 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
+            <div>
+              {editMode ? (
+                <input 
+                  value={selBuilding.label} 
+                  onChange={e => { const v = e.target.value; setSelBuilding(s => ({...s, label: v})); setPropertyData(p => ({...p, buildings: p.buildings.map(b => b.id === selBuilding.id ? {...b, label: v} : b)})); }} 
+                  style={{ fontSize: 14, fontWeight: 700, background: "var(--surface)", border: "1px solid var(--border)", padding: "4px 8px", borderRadius: 4, width: 100 }} 
+                />
+              ) : (
+                <div style={{ fontSize: 15, fontWeight: 700, color: selBuilding.color }}>{selBuilding.label}</div>
+              )}
+              <div style={{ fontSize: 11, color: "var(--muted)" }}>{selBuilding.sublabel || selBuilding.type}</div>
+            </div>
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <span style={{ fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 20, background: selBuilding.color + "22", color: selBuilding.color, textTransform: "uppercase" }}>{selBuilding.type}</span>
+              <button onClick={() => setSelBuilding(null)} style={{ background: "none", border: "none", color: "var(--muted)", cursor: "pointer", fontSize: 18 }}>✕</button>
             </div>
           </div>
         </div>
