@@ -462,7 +462,7 @@ function TenantPortal({ events, posts }) {
         </div>
         <Scripture/>
 
-        <div className="tblock" style={{border:`1px solid ${expired&&!okPlan?"var(--danger)":okPlan?"var(--sbd)":"var(--border)"}`,background:expired&&!okPlan?"#1a0505":okPlan?"var(--sbg)":"var(--surface)",transition:"all .4s"}}>
+        <div className="tblock" style={{border:`1px solid ${expired&&!okPlan?"var(--danger)":okPlan?"var(--sbd)":"var(--border)"}`,background:expired&&!okPlan?"#fef2f2":okPlan?"var(--sbg)":"var(--surface)",transition:"all .4s"}}>
 
           {!expired && !okPlan && <>
             <div className="tlbl">Your Free Session — Connected Automatically</div>
@@ -601,7 +601,7 @@ function GuestPortal({ events }) {
         </div>
         <Scripture/>
 
-        <div className="tblock" style={{border:`1px solid ${expired&&!okMsg?"var(--danger)":okMsg?"var(--sbd)":"var(--border)"}`,background:expired&&!okMsg?"#1a0505":okMsg?"var(--sbg)":"var(--surface)",transition:"all .4s"}}>
+        <div className="tblock" style={{border:`1px solid ${expired&&!okMsg?"var(--danger)":okMsg?"var(--sbd)":"var(--border)"}`,background:expired&&!okMsg?"#fef2f2":okMsg?"var(--sbg)":"var(--surface)",transition:"all .4s"}}>
 
           {!expired && !okMsg && <>
             <div className="tlbl">Your Free Guest Session — Connected</div>
