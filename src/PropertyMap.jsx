@@ -238,6 +238,16 @@ function PropertyMap({ users, maint, setMaint, toast2 }) {
     if (pendingBuilding) {
       addBuilding(pendingBuilding);
       setPendingBuilding(null);
+    } else {
+      addBuilding({
+        ...buildingForm,
+        x: 100,
+        y: 100,
+        w: 80,
+        h: 60,
+        floors: 1
+      });
+      setBuildingForm({ label: "NEW", sublabel: "", color: "#22c55e", type: "residential" });
     }
   }
 
@@ -313,7 +323,7 @@ function PropertyMap({ users, maint, setMaint, toast2 }) {
             <span style={{ fontSize: 13, fontWeight: 700, color: "var(--accent)" }}>Add {newItemType.toUpperCase()}</span>
             <button onClick={() => setNewItemType(null)} style={{ background: "none", border: "none", color: "var(--muted)", cursor: "pointer", fontSize: 16 }}>✕</button>
           </div>
-          {newItemType === "building" && <BuildingForm onSave={() => {}} onCancel={() => setNewItemType(null)} buildings={buildings} form={buildingForm} setForm={setBuildingForm} />}
+          {newItemType === "building" && <BuildingForm onSave={confirmBuilding} onCancel={() => setNewItemType(null)} pendingBuilding={pendingBuilding} form={buildingForm} setForm={setBuildingForm} />}
           {newItemType === "unit" && <UnitForm onSave={addUnit} onCancel={() => setNewItemType(null)} buildings={buildings} />}
           {newItemType === "camera" && <CameraForm onSave={addCamera} onCancel={() => setNewItemType(null)} />}
           {newItemType === "wifi" && <WifiForm onSave={addWifiZone} onCancel={() => setNewItemType(null)} />}
@@ -574,7 +584,7 @@ function PropertyMap({ users, maint, setMaint, toast2 }) {
   );
 }
 
-function BuildingForm({ onCancel, form, setForm }) {
+function BuildingForm({ onSave, onCancel, form, setForm }) {
   return (
     <div>
       <div style={{ fontSize: 10, color: "var(--muted)", marginBottom: 8 }}>
@@ -598,6 +608,10 @@ function BuildingForm({ onCancel, form, setForm }) {
           <option value="commercial">Commercial</option>
           <option value="utility">Utility</option>
         </select>
+      </div>
+      <div style={{ display: "flex", gap: 8, marginTop: 12 }}>
+        <button onClick={onSave} style={{ ...btnStyle, background: "var(--accent)", color: "#fff" }}>Add Building</button>
+        <button onClick={onCancel} style={btnStyle}>Cancel</button>
       </div>
     </div>
   );
