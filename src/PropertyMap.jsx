@@ -1,6 +1,18 @@
 import { useState, useEffect } from "react";
+import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
+import { initializeApp } from "firebase/app";
 
-const STORAGE_KEY = "bgt_property_data";
+const firebaseConfig = {
+  apiKey: "AIzaSyB03rgYczVFouPoTZYXgWKj7tguHauzufw",
+  authDomain: "churchfi-7790b.firebaseapp.com",
+  projectId: "churchfi-7790b",
+  storageBucket: "churchfi-7790b.firebasestorage.app",
+  messagingSenderId: "876984642539",
+  appId: "1:876984642539:web:ea6d337c3f443532e8c7ae",
+};
+
+const fbApp = initializeApp(firebaseConfig);
+const db = getFirestore(fbApp);
 
 const DEFAULT_DATA = {
   buildings: [
@@ -50,31 +62,26 @@ const DEFAULT_DATA = {
   ],
   wifiZones: [
     { id: "wifi1", x: 250, y: 250, radius: 100 },
-    { id: "wifi2", x: 180, ry: 300, radius: 70 },
+    { id: "wifi2", x: 180, y: 300, radius: 70 },
   ]
 };
 
-const loadData = () => {
+const loadPropertyData = async () => {
   try {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      const parsed = JSON.parse(saved);
-      if (parsed.units && parsed.units.length > 0) {
-        const hasBadData = parsed.units.some(u => !u.unitNum || u.unitNum > 30 || u.unitNum < 1);
-        if (hasBadData || parsed.units.length !== 30) {
-          localStorage.removeItem(STORAGE_KEY);
-          return DEFAULT_DATA;
-        }
+    const docSnap = await getDoc(doc(db, "propertyMap", "data"));
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      if (data.units && data.units.length > 0 && data.units.length === 30) {
+        return data;
       }
-      return parsed;
     }
-  } catch (e) { console.error("Load error:", e); localStorage.removeItem(STORAGE_KEY); }
+  } catch (e) { console.error("Load error:", e); }
   return DEFAULT_DATA;
 };
 
-const saveData = (data) => {
+const savePropertyData = async (data) => {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+    await setDoc(doc(db, "propertyMap", "data"), data);
   } catch (e) { console.error("Save error:", e); }
 };
 
@@ -82,7 +89,7 @@ const STATUS_COLOR = { active: "#22c55e", paid: "#38bdf8", expired: "#f87171", o
 const STATUS_LABEL = { active: "Active", paid: "Paid", expired: "Expired", offline: "No Device" };
 
 function PropertyMap({ users, maint, setMaint, toast2 }) {
-  const [propertyData, setPropertyData] = useState(loadData);
+  const [propertyData, setPropertyData] = useState(null);
   const [editMode, setEditMode] = useState(false);
   const [zoom, setZoom] = useState(1);
   const [expand, setExpand] = useState(false);
@@ -102,8 +109,23 @@ function PropertyMap({ users, maint, setMaint, toast2 }) {
   const [buildingForm, setBuildingForm] = useState({ label: "NEW", sublabel: "", color: "#22c55e", type: "residential" });
   const [pendingBuilding, setPendingBuilding] = useState(null);
 
-  useEffect(() => { saveData(propertyData); }, [propertyData]);
+  useEffect(() => {
+    loadPropertyData().then(data => {
+      setPropertyData(data);
+    });
+  }, []);
+
+  useEffect(() => { 
+    if (propertyData) {
+      savePropertyData(propertyData);
+    }
+  }, [propertyData]);
+  
   useEffect(() => { const t = setInterval(() => setPulse(p => !p), 900); return () => clearInterval(t); }, []);
+
+  if (!propertyData) {
+    return <div style={{padding:40,textAlign:"center",color:"var(--muted)"}}>Loading map...</div>;
+  }
 
   const { buildings, units, cameras, wifiZones } = propertyData;
 

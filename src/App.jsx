@@ -752,8 +752,17 @@ function AdminLogin({ onLogin }) {
   );
 }
 
-function Admin({ events, setEvents, posts, setPosts, maint, setMaint }) {
-  const [users,  setUsers]  = useState(INITIAL_USERS);
+function Admin({ events, setEvents, posts, setPosts, maint, setMaint, users: propUsers, setUsers: propSetUsers }) {
+  const [users, setUsers] = useState(INITIAL_USERS);
+  
+  useEffect(() => {
+    if (propUsers) setUsers(propUsers);
+  }, [propUsers]);
+
+  const handleSetUsers = (newUsers) => {
+    setUsers(newUsers);
+    if (propSetUsers) propSetUsers(newUsers);
+  };
   const [toast,  setToast]  = useState(null);
   const [filter, setFilter] = useState("all");
   const [tab,    setTab]    = useState("sessions");
@@ -786,8 +795,8 @@ function Admin({ events, setEvents, posts, setPosts, maint, setMaint }) {
   const filtered= (filter==="all"?users : filter==="resident"?users.filter(u=>u.type==="resident") : filter==="guest"?users.filter(u=>u.type==="guest") : users.filter(u=>u.status===filter)).filter(u => typeFilter === "all" || u.type === typeFilter);
 
   function toast2(m){ setToast(m); setTimeout(()=>setToast(null),2200); }
-  function grantTime(id){ setUsers(u=>u.map(x=>x.id===id?{...x,minutesUsed:0,status:"active"}:x)); toast2("✓ 60 minutes granted"); }
-  function kickUser(id){  setUsers(u=>u.map(x=>x.id===id?{...x,status:"expired",minutesUsed:60}:x)); toast2("User disconnected"); }
+  function grantTime(id){ handleSetUsers(u=>u.map(x=>x.id===id?{...x,minutesUsed:0,status:"active"}:x)); toast2("✓ 60 minutes granted"); }
+  function kickUser(id){  handleSetUsers(u=>u.map(x=>x.id===id?{...x,status:"expired",minutesUsed:60}:x)); toast2("User disconnected"); }
 
   const TABS = [
     { id:"sessions", lbl:"📊 Sessions" },
@@ -1077,7 +1086,7 @@ function Admin({ events, setEvents, posts, setPosts, maint, setMaint }) {
   );
 }
 
-// Legacy wrapper
+import { loadAllData, saveUsers, saveEvents, savePosts, saveMaintenance, savePropertyMap } from './firebase';
 import PropertyMap from './PropertyMap';
 
 export default function App() {
@@ -1087,13 +1096,62 @@ export default function App() {
   const [events,  setEvents] = useState(INITIAL_EVENTS);
   const [posts,   setPosts]  = useState(INITIAL_TENANT_POSTS);
   const [maint,   setMaint]  = useState(INITIAL_MAINT);
+  const [users,   setUsers]  = useState(INITIAL_USERS);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(()=>{ document.body.classList.toggle("light",!dark); },[dark]);
+  useEffect(()=>{
+    document.body.classList.toggle("light",!dark);
+  },[dark]);
+
+  useEffect(()=>{
+    async function loadFirebaseData() {
+      const data = await loadAllData();
+      if (data) {
+        if (data.users?.length > 0) setUsers(data.users);
+        if (data.events?.length > 0) setEvents(data.events);
+        if (data.posts?.length > 0) setPosts(data.posts);
+        if (data.maintenance?.length > 0) setMaint(data.maintenance);
+      }
+      setLoading(false);
+    }
+    loadFirebaseData();
+  }, []);
+
+  const setUsersWithSave = (newUsers) => {
+    setUsers(newUsers);
+    saveUsers(newUsers);
+  };
+
+  const setEventsWithSave = (newEvents) => {
+    setEvents(newEvents);
+    saveEvents(newEvents);
+  };
+
+  const setPostsWithSave = (newPosts) => {
+    setPosts(newPosts);
+    savePosts(newPosts);
+  };
+
+  const setMaintWithSave = (newMaint) => {
+    setMaint(newMaint);
+    saveMaintenance(newMaint);
+  };
 
   function addMaint(req){ setMaint(r=>[{...req,id:Date.now()},...r]); }
 
   const showAdmin = view==="admin" && authed;
   const showLogin = view==="admin" && !authed;
+
+  if (loading) {
+    return (
+      <div style={{display:"flex",alignItems:"center",justifyContent:"center",minHeight:"100vh",background:"var(--bg)"}}>
+        <div style={{textAlign:"center"}}>
+          <div style={{fontSize:40,marginBottom:10}}>⛪</div>
+          <div style={{fontSize:14,fontWeight:700,color:"var(--accent)"}}>Loading ChurchWiFi...</div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <AppCtx.Provider value={{addMaint}}>
@@ -1121,7 +1179,7 @@ export default function App() {
       {view==="resident" && <TenantPortal events={events} posts={posts}/>}
       {view==="guest"    && <GuestPortal  events={events}/>}
       {showLogin         && <AdminLogin   onLogin={()=>setAuthed(true)}/>}
-      {showAdmin         && <Admin events={events} setEvents={setEvents} posts={posts} setPosts={setPosts} maint={maint} setMaint={setMaint}/>}
+      {showAdmin         && <Admin events={events} setEvents={setEventsWithSave} posts={posts} setPosts={setPostsWithSave} maint={maint} setMaint={setMaintWithSave} users={users} setUsers={setUsersWithSave}/>}
     </AppCtx.Provider>
   );
 }
