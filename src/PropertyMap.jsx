@@ -102,6 +102,7 @@ function PropertyMap({ users, maint, setMaint, toast2 }) {
   const [pulse, setPulse] = useState(true);
   const [hover, setHover] = useState(null);
   const [selectedForEdit, setSelectedForEdit] = useState(null);
+  const [selectedItems, setSelectedItems] = useState([]);
   const [newItemType, setNewItemType] = useState(null);
   const [dragging, setDragging] = useState(null);
   const [drawing, setDrawing] = useState(null);
@@ -171,6 +172,26 @@ function PropertyMap({ users, maint, setMaint, toast2 }) {
   function addWifiZone(w) {
     setPropertyData(p => ({ ...p, wifiZones: [...(p.wifiZones || []), { ...w, id: "wifi_" + Date.now() }] }));
     setNewItemType(null);
+  }
+
+  function toggleSelection(item, e) {
+    if (!editMode) return;
+    if (e?.shiftKey) {
+      const exists = selectedItems.find(s => s.id === item.id && s.type === item.type);
+      if (exists) {
+        setSelectedItems(selectedItems.filter(s => !(s.id === item.id && s.type === item.type)));
+      } else {
+        setSelectedItems([...selectedItems, { id: item.id, type: item.type }]);
+      }
+    }
+  }
+
+  function clearSelection() {
+    setSelectedItems([]);
+  }
+
+  function isSelected(id, type) {
+    return selectedItems.some(s => s.id === id && s.type === type);
   }
 
   function deleteItem(type, id) {
@@ -281,9 +302,15 @@ function PropertyMap({ users, maint, setMaint, toast2 }) {
       const dx = coords.x - dragStart.x;
       const dy = coords.y - dragStart.y;
       if (dragging.type === "unit") {
+        const selectedUnitIds = selectedItems.filter(s => s.type === "units").map(s => s.id);
         setPropertyData(p => ({
           ...p,
-          units: p.units.map(u => u.id === dragging.id ? { ...u, rx: u.rx + dx, ry: u.ry + dy } : u)
+          units: p.units.map(u => {
+            if (u.id === dragging.id || (selectedUnitIds.includes(u.id) && selectedUnitIds.length > 1)) {
+              return { ...u, rx: u.rx + dx, ry: u.ry + dy };
+            }
+            return u;
+          })
         }));
       } else if (dragging.type === "camera") {
         setPropertyData(p => ({
@@ -540,9 +567,11 @@ function handleSvgMouseUp() {
             })}
             {layers.units && units.map(unit => {
               const st = uStatus(unit.id);
+              const sel = isSelected(unit.id, "units");
               return (
-                <g key={unit.id} onClick={(e) => { if (editMode) { e.stopPropagation(); setSelectedForEdit({ ...unit, type: "units" }); } }}>
-                  <circle cx={unit.rx} cy={unit.ry} r={5} fill={STATUS_COLOR[st]} />
+                <g key={unit.id} onClick={(e) => { if (editMode) { e.stopPropagation(); toggleSelection({ id: unit.id, type: "units" }, e); setSelectedForEdit({ ...unit, type: "units" }); } }}>
+                  {sel && <circle cx={unit.rx} cy={unit.ry} r={8} fill="none" stroke="#fbbf24" strokeWidth={2} strokeDasharray="3,2" />}
+                  <circle cx={unit.rx} cy={unit.ry} r={5} fill={STATUS_COLOR[st]} stroke={sel ? "#fbbf24" : "none"} strokeWidth={sel ? 1.5 : 0} />
                 </g>
               );
             })}
@@ -597,11 +626,17 @@ function handleSvgMouseUp() {
         ))}
         
         {editMode && (
-          <div style={{ display: "flex", gap: 4 }}>
+          <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
             <button onClick={() => setNewItemType(newItemType === "building" ? null : "building")} style={{ padding: "4px 8px", borderRadius: 4, border: `1px solid ${newItemType === "building" ? "#22c55e" : "#1a3a2a"}`, background: newItemType === "building" ? "#22c55e" : "#22c55e22", color: newItemType === "building" ? "#fff" : "#22c55e", fontSize: 9, fontWeight: 700 }}>🏢 Building</button>
             <button onClick={() => setNewItemType(newItemType === "unit" ? null : "unit")} style={{ padding: "4px 8px", borderRadius: 4, border: `1px solid ${newItemType === "unit" ? "#38bdf8" : "#1a3a2a"}`, background: newItemType === "unit" ? "#38bdf8" : "#38bdf822", color: newItemType === "unit" ? "#fff" : "#38bdf8", fontSize: 9, fontWeight: 700 }}>⬤ Unit</button>
             <button onClick={() => setNewItemType(newItemType === "camera" ? null : "camera")} style={{ padding: "4px 8px", borderRadius: 4, border: `1px solid ${newItemType === "camera" ? "#a78bfa" : "#1a3a2a"}`, background: newItemType === "camera" ? "#a78bfa" : "#a78bfa22", color: newItemType === "camera" ? "#fff" : "#a78bfa", fontSize: 9, fontWeight: 700 }}>📷 Camera</button>
             <button onClick={() => setNewItemType(newItemType === "wifi" ? null : "wifi")} style={{ padding: "4px 8px", borderRadius: 4, border: `1px solid ${newItemType === "wifi" ? "#fb923c" : "#1a3a2a"}`, background: newItemType === "wifi" ? "#fb923c" : "#fb923c22", color: newItemType === "wifi" ? "#fff" : "#fb923c", fontSize: 9, fontWeight: 700 }}>📶 WiFi</button>
+            {selectedItems.length > 0 && (
+              <button onClick={clearSelection} style={{ padding: "4px 8px", borderRadius: 4, border: `1px solid #f87171`, background: "#fef2f2", color: "#dc2626", fontSize: 9, fontWeight: 700, marginLeft: 4 }}>
+                ✕ Clear ({selectedItems.length})
+              </button>
+            )}
+            <span style={{ fontSize: 9, color: "#fbbf24", marginLeft: 4 }}>Shift+Click to multi-select</span>
           </div>
         )}
         
@@ -802,10 +837,12 @@ function handleSvgMouseUp() {
                 const st = uStatus(unit.id);
                 const col = STATUS_COLOR[st];
                 const sel = selUnit?.id === unit.id;
+                const multiSel = isSelected(unit.id, "units");
                 return (
-                  <g key={unit.id} style={{ cursor: editMode ? "move" : "pointer" }} onClick={(e) => { if (editMode) { e.stopPropagation(); setSelectedForEdit({ ...unit, type: "units" }); } else { handleUnitClick(unit); } }} onMouseDown={(e) => { if (editMode) { e.stopPropagation(); setDragging({ ...unit, type: "unit" }); const coords = getSvgCoords(e, e.currentTarget.closest("svg")); setDragStart(coords); } }}>
+                  <g key={unit.id} style={{ cursor: editMode ? "move" : "pointer" }} onClick={(e) => { if (editMode) { e.stopPropagation(); toggleSelection({ id: unit.id, type: "units" }, e); } else { handleUnitClick(unit); } }} onMouseDown={(e) => { if (editMode) { e.stopPropagation(); setDragging({ ...unit, type: "unit" }); const coords = getSvgCoords(e, e.currentTarget.closest("svg")); setDragStart(coords); } }}>
                     {uMaint(unit.id).length > 0 && layers.alerts && <circle cx={unit.rx} cy={unit.ry} r={10} fill="none" stroke="#fb923c" strokeWidth={pulse ? 2 : 1} opacity={pulse ? 0.9 : 0.4} />}
-                    <circle cx={unit.rx} cy={unit.ry} r={5} fill={col} stroke={sel ? "#fff" : "none"} strokeWidth={sel ? 1.5 : 0} />
+                    {multiSel && <circle cx={unit.rx} cy={unit.ry} r={8} fill="none" stroke="#fbbf24" strokeWidth={2} strokeDasharray="3,2" />}
+                    <circle cx={unit.rx} cy={unit.ry} r={5} fill={col} stroke={sel || multiSel ? "#fff" : "none"} strokeWidth={sel || multiSel ? 1.5 : 0} />
                   </g>
                 );
               })}
