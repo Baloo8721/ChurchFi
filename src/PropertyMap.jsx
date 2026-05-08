@@ -129,7 +129,7 @@ function PropertyMap({ users, maint, setMaint, toast2 }) {
     return <div style={{padding:40,textAlign:"center",color:"var(--muted)"}}>Loading map...</div>;
   }
 
-  const { buildings, units, cameras, wifiZones } = propertyData;
+  const { buildings = [], units = [], cameras = [], wifiZones = [] } = propertyData || {};
 
   function uStatus(uid) {
     const unit = units.find(x => x.id === uid);
