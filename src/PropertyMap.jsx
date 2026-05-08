@@ -169,7 +169,7 @@ function PropertyMap({ users, maint, setMaint, toast2 }) {
   }
 
   function addWifiZone(w) {
-    setPropertyData(p => ({ ...p, wifiZones: [...p.wifiZones, { ...w, id: "wifi_" + Date.now() }] }));
+    setPropertyData(p => ({ ...p, wifiZones: [...(p.wifiZones || []), { ...w, id: "wifi_" + Date.now() }] }));
     setNewItemType(null);
   }
 
@@ -297,7 +297,7 @@ function PropertyMap({ users, maint, setMaint, toast2 }) {
         }));
       } else if (dragging.type === "building") {
         const bld = dragging;
-        const bUnits = propertyData.units.filter(u => u.building === bld.id);
+const bUnits = (propertyData.units || []).filter(u => u.building === bld.id);
         setPropertyData(p => ({
           ...p,
           buildings: p.buildings.map(b => b.id === dragging.id ? { ...b, x: b.x + dx, y: b.y + dy } : b),
