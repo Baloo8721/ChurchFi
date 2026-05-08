@@ -97,6 +97,7 @@ function PropertyMap({ users, maint, setMaint, toast2 }) {
   const [selUnit, setSelUnit] = useState(null);
   const [selCam, setSelCam] = useState(null);
   const [selBuilding, setSelBuilding] = useState(null);
+  const [selWifi, setSelWifi] = useState(null);
   const [layers, setLayers] = useState({ wifi: true, cameras: true, units: true, alerts: true });
   const [pulse, setPulse] = useState(true);
   const [hover, setHover] = useState(null);
@@ -178,15 +179,47 @@ function PropertyMap({ users, maint, setMaint, toast2 }) {
   }
 
   function handleBuildingClick(bld) {
-    const bUnits = units.filter(u => u.building === bld.id);
-    if (bUnits.length > 0) {
-      const firstUnit = bUnits[0];
-      const st = uStatus(firstUnit.id);
-      const reqs = uMaint(firstUnit.id);
-      const ud = uData(firstUnit.id);
-      setSelBuilding(bld);
-      clearAll();
-    }
+    const bUnits = propertyData.units.filter(u => u.building === bld.id);
+    setSelBuilding({ ...bld, containedUnits: bUnits, justSelected: true });
+    setSelUnit(null);
+    setSelCam(null);
+  }
+
+  function snapUnitsToBuilding(buildingId) {
+    const bld = buildings.find(b => b.id === buildingId);
+    if (!bld) return;
+    
+    const bUnits = units.filter(u => u.building === buildingId);
+    if (bUnits.length === 0) return;
+    
+    const padding = 10;
+    const unitSize = 8;
+    const availableW = bld.w - padding * 2;
+    const availableH = bld.h - padding * 2 - 15;
+    
+    const cols = Math.ceil(Math.sqrt(bUnits.length * (availableW / availableH)));
+    const rows = Math.ceil(bUnits.length / cols);
+    const spacingX = availableW / cols;
+    const spacingY = availableH / rows;
+    
+    const updatedUnits = bUnits.map((u, i) => {
+      const col = i % cols;
+      const row = Math.floor(i / cols);
+      return {
+        ...u,
+        rx: bld.x + padding + col * spacingX + spacingX / 2,
+        ry: bld.y + padding + 15 + row * spacingY + spacingY / 2
+      };
+    });
+    
+    setPropertyData(p => ({
+      ...p,
+      units: p.units.map(u => {
+        const updated = updatedUnits.find(bu => bu.id === u.id);
+        return updated || u;
+      })
+    }));
+    toast2(`Snapped ${bUnits.length} units to grid`);
   }
 
   function handleUnitClick(unit) {
@@ -257,10 +290,23 @@ function PropertyMap({ users, maint, setMaint, toast2 }) {
           ...p,
           cameras: p.cameras.map(c => c.id === dragging.id ? { ...c, x: c.x + dx, y: c.y + dy } : c)
         }));
-      } else {
+      } else if (dragging.type === "wifi") {
         setPropertyData(p => ({
           ...p,
-          buildings: p.buildings.map(b => b.id === dragging.id ? { ...b, x: b.x + dx, y: b.y + dy } : b)
+          wifiZones: p.wifiZones.map(w => w.id === dragging.id ? { ...w, x: w.x + dx, y: w.y + dy } : w)
+        }));
+      } else if (dragging.type === "building") {
+        const bld = dragging;
+        const bUnits = propertyData.units.filter(u => u.building === bld.id);
+        setPropertyData(p => ({
+          ...p,
+          buildings: p.buildings.map(b => b.id === dragging.id ? { ...b, x: b.x + dx, y: b.y + dy } : b),
+          units: p.units.map(u => {
+            if (u.building === bld.id) {
+              return { ...u, rx: u.rx + dx, ry: u.ry + dy };
+            }
+            return u;
+          })
         }));
       }
       setDragStart(coords);
@@ -291,6 +337,7 @@ function PropertyMap({ users, maint, setMaint, toast2 }) {
           buildings: p.buildings.map(bld => bld.id === resizing.id ? { ...bld, x: newX, w: newW, h: newH } : bld)
         }));
       }
+      snapUnitsToBuilding(resizing.id);
     }
     
     if (drawing && dragStart) {
@@ -303,11 +350,49 @@ function PropertyMap({ users, maint, setMaint, toast2 }) {
     }
   }
 
-  function handleSvgMouseUp() {
+function handleSvgMouseUp() {
+    if (dragging && dragging.type === "unit") {
+      const unitId = dragging.id;
+      const currentUnit = propertyData.units.find(u => u.id === unitId);
+      if (!currentUnit) {
+        setDragging(null);
+        setDragStart(null);
+        return;
+      }
+      
+      let foundBuilding = null;
+      
+      for (const bld of buildings) {
+        if (currentUnit.rx >= bld.x && currentUnit.rx <= bld.x + bld.w && currentUnit.ry >= bld.y && currentUnit.ry <= bld.y + bld.h) {
+          foundBuilding = bld;
+          break;
+        }
+      }
+      
+      const currentBuildingId = currentUnit.building;
+      
+      if (foundBuilding && foundBuilding.id !== currentBuildingId) {
+        setPropertyData(p => ({
+          ...p,
+          units: p.units.map(u => u.id === unitId ? { ...u, building: foundBuilding.id } : u)
+        }));
+        setTimeout(() => snapUnitsToBuilding(foundBuilding.id), 100);
+        toast2(`Unit added to ${foundBuilding.label}`);
+      } else if (!foundBuilding && currentBuildingId) {
+        setPropertyData(p => ({
+          ...p,
+          units: p.units.map(u => u.id === unitId ? { ...u, building: null } : u)
+        }));
+        toast2("Unit removed from building");
+      } else if (foundBuilding && foundBuilding.id === currentBuildingId) {
+        setTimeout(() => snapUnitsToBuilding(foundBuilding.id), 100);
+      }
+    }
+    
     if (dragging) { setDragging(null); setDragStart(null); }
     if (resizing) { setResizing(null); setResizeStart(null); setDragStart(null); }
     if (drawing && drawing.w > 15 && drawing.h > 15) {
-      setPendingBuilding({ ...buildingForm, x: drawing.x, y: drawing.y, w: drawing.w, h: drawing.h });
+      setPendingBuilding({ ...buildingForm, x: drawing.x, y: drawing.y, w: drawing.w, h: buildingForm.h });
     }
     setDrawing(null);
     setDragStart(null);
@@ -341,7 +426,7 @@ function PropertyMap({ users, maint, setMaint, toast2 }) {
     if (editMode) {
       const svg = e.target.ownerSVGElement || e.target.closest("svg");
       const coords = getSvgCoords(e, svg);
-      setDragging(bld);
+      setDragging({ ...bld, type: "building" });
       setDragStart(coords);
     }
   }
@@ -426,12 +511,13 @@ function PropertyMap({ users, maint, setMaint, toast2 }) {
               <rect x="425" y="52" width="235" height="478" fill="none" stroke="#0284c7" strokeWidth="1" strokeDasharray="6,4" opacity="0.4" />
             `}} />
             {layers.wifi && wifiZones.map(wz => (
-              <g key={wz.id}>
+              <g key={wz.id} style={{ cursor: editMode ? "move" : "pointer" }} onClick={() => { if (editMode) { setSelectedForEdit({ ...wz, type: "wifiZones" }); } else { setSelWifi(wz); setSelUnit(null); setSelCam(null); setSelBuilding(null); } }} onMouseDown={(e) => { if (editMode) { e.stopPropagation(); const svg = e.target.ownerSVGElement || e.target.closest("svg"); const coords = getSvgCoords(e, svg); setDragging({ ...wz, type: "wifi" }); setDragStart(coords); } }}>
                 <ellipse cx={wz.x} cy={wz.y} rx={wz.radius} ry={wz.radius * 0.8} fill="#22c55e" opacity="0.1" />
                 <ellipse cx={wz.x} cy={wz.y} rx={wz.radius * 0.6} ry={wz.radius * 0.5} fill="#22c55e" opacity="0.15" />
+                <circle cx={wz.x} cy={wz.y} r={10} fill="#fff" stroke="#a78bfa" strokeWidth={pulse ? 2 : 1} />
+                <text x={wz.x} y={wz.y + 4} textAnchor="middle" fontSize="10">📡</text>
               </g>
             ))}
-            {layers.wifi && <g><circle cx="250" cy="280" r="10" fill="#fff" stroke="#a78bfa" strokeWidth={pulse ? 2 : 1} /><text x="250" y="284" textAnchor="middle" fontSize="10">📡</text></g>}
             {buildings.map(bld => {
               const isSel = selectedForEdit?.id === bld.id;
               return (
@@ -649,21 +735,15 @@ function PropertyMap({ users, maint, setMaint, toast2 }) {
               <rect x="50" y="52" width="345" height="478" fill="none" stroke="#059669" strokeWidth="1" strokeDasharray="6,4" opacity="0.4" />
               <rect x="425" y="52" width="235" height="478" fill="none" stroke="#0284c7" strokeWidth="1" strokeDasharray="6,4" opacity="0.4" />
               
-              {/* WiFi coverage */}
+              {/* WiFi coverage with router */}
               {layers.wifi && wifiZones.map(wz => (
-                <g key={wz.id}>
+                <g key={wz.id} style={{ cursor: editMode ? "move" : "pointer" }} onClick={() => { if (editMode) { setSelectedForEdit({ ...wz, type: "wifiZones" }); } else { setSelWifi(wz); setSelUnit(null); setSelCam(null); setSelBuilding(null); } }} onMouseDown={(e) => { if (editMode) { e.stopPropagation(); const svg = e.target.ownerSVGElement || e.target.closest("svg"); const coords = getSvgCoords(e, svg); setDragging({ ...wz, type: "wifi" }); setDragStart(coords); } }}>
                   <ellipse cx={wz.x} cy={wz.y} rx={wz.radius} ry={wz.radius * 0.8} fill="#22c55e" opacity="0.1" />
                   <ellipse cx={wz.x} cy={wz.y} rx={wz.radius * 0.6} ry={wz.radius * 0.5} fill="#22c55e" opacity="0.15" />
+                  <circle cx={wz.x} cy={wz.y} r={10} fill="#fff" stroke="#a78bfa" strokeWidth={pulse ? 2 : 1} />
+                  <text x={wz.x} y={wz.y + 4} textAnchor="middle" fontSize="10">📡</text>
                 </g>
               ))}
-              
-              {/* Router */}
-              {layers.wifi && (
-                <g>
-                  <circle cx="250" cy="280" r="10" fill="#ffffff" stroke="#a78bfa" strokeWidth={pulse ? 2 : 1} />
-                  <text x="250" y="284" textAnchor="middle" fontSize="10">📡</text>
-                </g>
-              )}
               
               {/* Buildings */}
               {buildings.map(bld => (
@@ -773,8 +853,8 @@ function PropertyMap({ users, maint, setMaint, toast2 }) {
       {selUnit && (
         <div style={{ background: "var(--card)", border: `1px solid ${selUnit.wifiUser ? STATUS_COLOR[selUnit.wifiUser.status] + "55" : "#ddd"}`, borderRadius: 14, padding: 14, marginTop: 12 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
-            <div>
-              {editMode ? (
+            <div style={{ flex: 1 }}>
+              {(editMode || selUnit.editing) ? (
                 <input 
                   value={selUnit.label} 
                   onChange={e => { const v = e.target.value; setSelUnit(s => ({...s, label: v})); setPropertyData(p => ({...p, units: p.units.map(u => u.id === selUnit.id ? {...u, label: v} : u)})); }} 
@@ -783,9 +863,15 @@ function PropertyMap({ users, maint, setMaint, toast2 }) {
               ) : (
                 <div style={{ fontSize: 15, fontWeight: 700 }}>{selUnit.label}</div>
               )}
-              <div style={{ fontSize: 11, color: "var(--muted)" }}>{selUnit.wifiUser?.name || selUnit.buildingName || "Unassigned"}</div>
+              <div style={{ fontSize: 11, color: "var(--muted)" }}>{selUnit.wifiUser?.name || selUnit.buildingName || selUnit.building ? "Inside building" : "Unassigned"}</div>
             </div>
-            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
+              <button 
+                onClick={() => setSelUnit(s => ({...s, editing: !s.editing}))} 
+                style={{ padding: "4px 10px", borderRadius: 6, border: "1px solid var(--accent)", background: selUnit.editing ? "var(--accent)" : "transparent", color: selUnit.editing ? "#fff" : "var(--accent)", fontSize: 10, fontWeight: 700 }}
+              >
+                {selUnit.editing ? "✓ Done" : "✏ Edit"}
+              </button>
               <span style={{ fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 20, background: selUnit.wifiUser ? STATUS_COLOR[selUnit.wifiUser.status] + "22" : "#ddd", color: selUnit.wifiUser ? STATUS_COLOR[selUnit.wifiUser.status] : "#666" }}>
                 {selUnit.wifiUser ? STATUS_LABEL[selUnit.wifiUser.status] : "No Device"}
               </span>
@@ -819,19 +905,25 @@ function PropertyMap({ users, maint, setMaint, toast2 }) {
       {selCam && (
         <div style={{ background: "var(--card)", border: `1px solid ${selCam.status === "online" ? "#38bdf833" : "#f8717133"}`, borderRadius: 14, padding: 14, marginTop: 12 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-            <div>
-              {editMode ? (
+            <div style={{ flex: 1 }}>
+              {(editMode || selCam.editing) ? (
                 <input 
                   value={selCam.label} 
                   onChange={e => { const v = e.target.value; setSelCam(s => ({...s, label: v})); setPropertyData(p => ({...p, cameras: p.cameras.map(c => c.id === selCam.id ? {...c, label: v} : c)})); }} 
-                  style={{ fontSize: 14, fontWeight: 700, background: "var(--surface)", border: "1px solid var(--border)", padding: "4px 8px", borderRadius: 4, width: 100 }} 
+                  style={{ fontSize: 14, fontWeight: 700, background: "var(--surface)", border: "1px solid var(--border)", padding: "4px 8px", borderRadius: 4, width: 120 }} 
                 />
               ) : (
                 <div style={{ fontSize: 15, fontWeight: 700 }}>📷 {selCam.label}</div>
               )}
               <div style={{ fontSize: 11, color: "var(--muted)", fontFamily: "'DM Mono',monospace" }}>{selCam.zone || "Property"}</div>
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <button 
+                onClick={() => setSelCam(s => ({...s, editing: !s.editing}))} 
+                style={{ padding: "4px 10px", borderRadius: 6, border: "1px solid var(--accent)", background: selCam.editing ? "var(--accent)" : "transparent", color: selCam.editing ? "#fff" : "var(--accent)", fontSize: 10, fontWeight: 700 }}
+              >
+                {selCam.editing ? "✓ Done" : "✏ Edit"}
+              </button>
               <div style={{ width: 6, height: 6, borderRadius: "50%", background: selCam.status === "online" ? "#38bdf8" : "#f87171" }} />
               <span style={{ fontSize: 10, fontWeight: 700, color: selCam.status === "online" ? "#38bdf8" : "#f87171" }}>{selCam.status.toUpperCase()}</span>
               <button onClick={() => setSelCam(null)} style={{ background: "none", border: "none", color: "var(--muted)", cursor: "pointer", fontSize: 18, marginLeft: 8 }}>✕</button>
@@ -840,26 +932,126 @@ function PropertyMap({ users, maint, setMaint, toast2 }) {
         </div>
       )}
 
+      {/* WiFi detail */}
+      {selWifi && (
+        <div style={{ background: "var(--card)", border: `1px solid #fb923c55`, borderRadius: 14, padding: 14, marginTop: 12 }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div style={{ flex: 1 }}>
+              {(editMode || selWifi.editing) ? (
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  <input 
+                    value={selWifi.x} 
+                    onChange={e => { const v = +e.target.value; setSelWifi(s => ({...s, x: v})); setPropertyData(p => ({...p, wifiZones: p.wifiZones.map(w => w.id === selWifi.id ? {...w, x: v} : w)})); }} 
+                    type="number"
+                    style={{ fontSize: 12, background: "var(--surface)", border: "1px solid var(--border)", padding: "4px 8px", borderRadius: 4, width: 60 }} 
+                    placeholder="X"
+                  />
+                  <input 
+                    value={selWifi.y} 
+                    onChange={e => { const v = +e.target.value; setSelWifi(s => ({...s, y: v})); setPropertyData(p => ({...p, wifiZones: p.wifiZones.map(w => w.id === selWifi.id ? {...w, y: v} : w)})); }} 
+                    type="number"
+                    style={{ fontSize: 12, background: "var(--surface)", border: "1px solid var(--border)", padding: "4px 8px", borderRadius: 4, width: 60 }} 
+                    placeholder="Y"
+                  />
+                  <input 
+                    value={selWifi.radius} 
+                    onChange={e => { const v = +e.target.value; setSelWifi(s => ({...s, radius: v})); setPropertyData(p => ({...p, wifiZones: p.wifiZones.map(w => w.id === selWifi.id ? {...w, radius: v} : w)})); }} 
+                    type="number"
+                    style={{ fontSize: 12, background: "var(--surface)", border: "1px solid var(--border)", padding: "4px 8px", borderRadius: 4, width: 60 }} 
+                    placeholder="Radius"
+                  />
+                </div>
+              ) : (
+                <div style={{ fontSize: 15, fontWeight: 700 }}>📶 WiFi Zone</div>
+              )}
+              <div style={{ fontSize: 11, color: "var(--muted)", fontFamily: "'DM Mono',monospace" }}>
+                Position: {Math.round(selWifi.x)}, {Math.round(selWifi.y)} | Range: {selWifi.radius}
+              </div>
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+              <button 
+                onClick={() => setSelWifi(s => ({...s, editing: !s.editing}))} 
+                style={{ padding: "4px 10px", borderRadius: 6, border: "1px solid var(--accent)", background: selWifi.editing ? "var(--accent)" : "transparent", color: selWifi.editing ? "#fff" : "var(--accent)", fontSize: 10, fontWeight: 700 }}
+              >
+                {selWifi.editing ? "✓ Done" : "✏ Edit"}
+              </button>
+              <span style={{ fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 20, background: "#fb923c22", color: "#fb923c" }}>ACTIVE</span>
+              <button onClick={() => setSelWifi(null)} style={{ background: "none", border: "none", color: "var(--muted)", cursor: "pointer", fontSize: 18, marginLeft: 8 }}>✕</button>
+            </div>
+          </div>
+          {editMode && (
+            <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid var(--border)" }}>
+              <button onClick={() => { setPropertyData(p => ({...p, wifiZones: p.wifiZones.filter(w => w.id !== selWifi.id)})); setSelWifi(null); toast2("WiFi zone deleted"); }} style={{ padding: "6px 12px", borderRadius: 6, border: "1px solid var(--danger)", background: "#fef2f2", color: "var(--danger)", fontSize: 10, fontWeight: 700 }}>🗑 Delete WiFi Zone</button>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Building detail */}
       {selBuilding && (
         <div style={{ background: "var(--card)", border: `1px solid ${selBuilding.color}55`, borderRadius: 14, padding: 14, marginTop: 12 }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
-            <div>
-              {editMode ? (
+            <div style={{ flex: 1 }}>
+              {(editMode || selBuilding.editing) ? (
                 <input 
                   value={selBuilding.label} 
                   onChange={e => { const v = e.target.value; setSelBuilding(s => ({...s, label: v})); setPropertyData(p => ({...p, buildings: p.buildings.map(b => b.id === selBuilding.id ? {...b, label: v} : b)})); }} 
-                  style={{ fontSize: 14, fontWeight: 700, background: "var(--surface)", border: "1px solid var(--border)", padding: "4px 8px", borderRadius: 4, width: 100 }} 
+                  style={{ fontSize: 14, fontWeight: 700, background: "var(--surface)", border: "1px solid var(--border)", padding: "4px 8px", borderRadius: 4, width: 120, marginBottom: 4 }} 
                 />
               ) : (
                 <div style={{ fontSize: 15, fontWeight: 700, color: selBuilding.color }}>{selBuilding.label}</div>
               )}
-              <div style={{ fontSize: 11, color: "var(--muted)" }}>{selBuilding.sublabel || selBuilding.type}</div>
+              {(editMode || selBuilding.editing) ? (
+                <input 
+                  value={selBuilding.sublabel || ""} 
+                  onChange={e => { const v = e.target.value; setSelBuilding(s => ({...s, sublabel: v})); setPropertyData(p => ({...p, buildings: p.buildings.map(b => b.id === selBuilding.id ? {...b, sublabel: v} : b)})); }} 
+                  style={{ fontSize: 11, background: "var(--surface)", border: "1px solid var(--border)", padding: "4px 8px", borderRadius: 4, width: "100%" }} 
+                  placeholder="Sublabel"
+                />
+              ) : (
+                <div style={{ fontSize: 11, color: "var(--muted)" }}>{selBuilding.sublabel || selBuilding.type}</div>
+              )}
             </div>
-            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+            <div style={{ display: "flex", gap: 6, alignItems: "center", flexShrink: 0 }}>
+              <button 
+                onClick={() => setSelBuilding(s => ({...s, editing: !s.editing}))} 
+                style={{ padding: "4px 10px", borderRadius: 6, border: "1px solid var(--accent)", background: selBuilding.editing ? "var(--accent)" : "transparent", color: selBuilding.editing ? "#fff" : "var(--accent)", fontSize: 10, fontWeight: 700 }}
+              >
+                {selBuilding.editing ? "✓ Done" : "✏ Edit"}
+              </button>
               <span style={{ fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 20, background: selBuilding.color + "22", color: selBuilding.color, textTransform: "uppercase" }}>{selBuilding.type}</span>
               <button onClick={() => setSelBuilding(null)} style={{ background: "none", border: "none", color: "var(--muted)", cursor: "pointer", fontSize: 18 }}>✕</button>
             </div>
+          </div>
+          
+          {selBuilding.containedUnits && selBuilding.containedUnits.length > 0 && (
+            <div style={{ marginTop: 10, paddingTop: 10, borderTop: "1px solid var(--border)" }}>
+              <div style={{ fontSize: 10, color: "var(--muted)", marginBottom: 6, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <span>Units inside ({selBuilding.containedUnits.length})</span>
+                <button onClick={() => snapUnitsToBuilding(selBuilding.id)} style={{ padding: "2px 8px", borderRadius: 4, border: "1px solid var(--accent)", background: "transparent", color: "var(--accent)", fontSize: 9 }}>🔄 Snap to Grid</button>
+              </div>
+              <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+                {selBuilding.containedUnits.map(u => (
+                  <div key={u.id} onClick={() => handleUnitClick(u)} style={{ padding: "4px 8px", borderRadius: 4, background: STATUS_COLOR[uStatus(u.id)] + "22", border: `1px solid ${STATUS_COLOR[uStatus(u.id)]}`, fontSize: 10, color: STATUS_COLOR[uStatus(u.id)], cursor: "pointer" }}>
+                    {u.label}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+          
+          <div style={{ marginTop: 10, display: "flex", gap: 8 }}>
+            <button onClick={() => {
+              const newUnit = { label: `U${units.length + 1}`, building: selBuilding.id, rx: selBuilding.x + selBuilding.w / 2, ry: selBuilding.y + selBuilding.h / 2, floor: 1 };
+              addUnit(newUnit);
+              setPropertyData(p => ({
+                ...p,
+                units: [...p.units.map(u => u.id === newUnit.id ? {...u, building: selBuilding.id} : u)]
+              }));
+              setTimeout(() => snapUnitsToBuilding(selBuilding.id), 100);
+            }} style={{ padding: "6px 12px", borderRadius: 6, border: "1px solid var(--accent)", background: "var(--accent)", color: "#fff", fontSize: 10, fontWeight: 700 }}>
+              + Add Unit
+            </button>
           </div>
         </div>
       )}
